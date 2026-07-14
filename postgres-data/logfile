@@ -19,3 +19,9 @@
 2026-07-14 19:02:30.077 IST [25200] LOG:  checkpoint complete: wrote 6 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.537 s, sync=0.008 s, total=0.578 s; sync files=5, longest=0.003 s, average=0.002 s; distance=1 kB, estimate=3862 kB; lsn=0/24B9780, redo lsn=0/24B9748
 2026-07-14 19:07:29.089 IST [25200] LOG:  checkpoint starting: time
 2026-07-14 19:07:30.321 IST [25200] LOG:  checkpoint complete: wrote 12 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=1.209 s, sync=0.010 s, total=1.233 s; sync files=10, longest=0.002 s, average=0.001 s; distance=1 kB, estimate=3476 kB; lsn=0/24B9F68, redo lsn=0/24B9EF8
+2026-07-14 19:57:29.403 IST [25200] LOG:  checkpoint starting: time
+2026-07-14 19:57:31.500 IST [25200] LOG:  checkpoint complete: wrote 20 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.048 s, sync=0.020 s, total=2.098 s; sync files=14, longest=0.003 s, average=0.002 s; distance=2 kB, estimate=3128 kB; lsn=0/24BA928, redo lsn=0/24BA8F0
+2026-07-14 20:03:06.902 IST [12132] LOG:  background worker "logical replication launcher" (PID 14408) was terminated by exception 0xC000013A
+2026-07-14 20:03:06.902 IST [12132] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2026-07-14 20:03:06.902 IST [12132] LOG:  terminating any other active server processes
+2026-07-14 20:03:06.918 IST [12132] LOG:  received fast shutdown request
