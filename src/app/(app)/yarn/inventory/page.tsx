@@ -19,8 +19,8 @@ export default function Page() {
           <Button variant="outline" onClick={() => router.push("/yarn") }>
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
           </Button>
-          <Button onClick={() => router.push("/yarn") }>
-            <Plus className="h-4 w-4 mr-2" /> View Yarn Overview
+          <Button onClick={() => router.push("/yarn/inventory/new") }>
+            <Plus className="h-4 w-4 mr-2" /> Add Inventory
           </Button>
         </div>
       </div>

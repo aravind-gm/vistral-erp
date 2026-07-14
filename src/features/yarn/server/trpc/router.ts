@@ -27,6 +27,17 @@ const procurementSchema = z.object({
   })).min(1),
 });
 
+const inventoryCreateSchema = z.object({
+  yarnTypeId: z.string().min(1),
+  supplierId: z.string().optional(),
+  lotNo: z.string().optional(),
+  quantity: z.number().min(0.001),
+  unit: z.string().default("KG"),
+  location: z.string().optional(),
+  reorderLevel: z.number().min(0).default(0),
+  remarks: z.string().optional(),
+});
+
 export const yarnRouter = createTRPCRouter({
   // Yarn Types
   listTypes: protectedProcedure
@@ -123,6 +134,33 @@ export const yarnRouter = createTRPCRouter({
           },
         },
         include: { items: true },
+      });
+    }),
+
+  createInventory: protectedProcedure
+    .input(inventoryCreateSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { quantity, ...data } = input;
+      return prisma.yarnInventory.create({
+        data: {
+          ...data,
+          currentStock: quantity,
+          reservedStock: 0,
+          availableStock: quantity,
+          createdBy: ctx.session.user.id,
+          updatedBy: ctx.session.user.id,
+          transactions: {
+            create: {
+              type: "RECEIPT",
+              referenceType: "MANUAL_ADDITION",
+              quantity,
+              balanceAfter: quantity,
+              remarks: input.remarks,
+              createdBy: ctx.session.user.id,
+              updatedBy: ctx.session.user.id,
+            },
+          },
+        },
       });
     }),
 
