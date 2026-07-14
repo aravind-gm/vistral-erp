@@ -1,20 +1,25 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { api } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 
-export default function NewProcurementPage() {
-  const router = useRouter();
-  const { data: suppliers } = api.suppliers.list.useQuery({ page: 1, limit: 100 });
-  const { data: yarnTypes } = api.yarn.listTypes.useQuery();
-
-  const procurementSchema = z.object({
-    supplierId: z.string().min(1, "Please select a supplier"),
-    expectedDate: z.date().optional(),
-    remarks: z.string().optional(),
-    items: z.array(z.object({
+const procurementSchema = z.object({
+  supplierId: z.string().min(1, "Please select a supplier"),
+  expectedDate: z.string().optional(),
+  remarks: z.string().optional(),
+  items: z.array(
+    z.object({
       yarnTypeId: z.string().min(1, "Yarn type is required"),
       quantity: z.number().min(0.001, "Quantity required"),
       unit: z.string().default("KG"),
@@ -22,10 +27,16 @@ export default function NewProcurementPage() {
       amount: z.number().min(0),
       hsn: z.string().optional(),
       gstPercent: z.number().min(0).max(100).default(5),
-    })).min(1, "Add at least one procurement item")),
-  });
+    })
+  ).min(1, "Add at least one procurement item"),
+});
 
-  type ProcurementForm = z.infer<typeof procurementSchema>;
+type ProcurementForm = z.infer<typeof procurementSchema>;
+
+export default function NewProcurementPage() {
+  const router = useRouter();
+  const { data: suppliers } = api.suppliers.list.useQuery({ page: 1, limit: 100 });
+  const { data: yarnTypes } = api.yarn.listTypes.useQuery();
 
   const {
     register,
@@ -38,7 +49,7 @@ export default function NewProcurementPage() {
     resolver: zodResolver(procurementSchema),
     defaultValues: {
       supplierId: "",
-      expectedDate: undefined,
+      expectedDate: "",
       remarks: "",
       items: [{ yarnTypeId: "", quantity: 0.1, unit: "KG", unitPrice: 0, amount: 0, hsn: "", gstPercent: 5 }],
     },
@@ -54,7 +65,12 @@ export default function NewProcurementPage() {
     onError: (error) => toast.error(error.message),
   });
 
-  const onSubmit = (data: ProcurementForm) => createProcurement.mutate(data);
+  const onSubmit = (data: ProcurementForm) => {
+    createProcurement.mutate({
+      ...data,
+      expectedDate: data.expectedDate ? new Date(data.expectedDate) : undefined,
+    });
+  };
 
   return (
     <div className="space-y-6 pt-4">
