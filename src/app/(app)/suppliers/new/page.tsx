@@ -1,36 +1,44 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { api } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
+
+const supplierSchema = z.object({
+  name: z.string().min(1, "Supplier name is required"),
+  contactPerson: z.string().optional(),
+  email: z.string().email("Invalid email").optional().or(z.literal("")),
+  phone: z.string().min(10, "Phone is required"),
+  altPhone: z.string().optional(),
+  gstin: z.string().optional(),
+  pan: z.string().optional(),
+  addressLine1: z.string().min(1, "Address is required"),
+  addressLine2: z.string().optional(),
+  city: z.string().min(1, "City is required"),
+  state: z.string().min(1, "State is required"),
+  pincode: z.string().min(6, "Pincode is required"),
+  country: z.string().default("India"),
+  bankName: z.string().optional(),
+  bankBranch: z.string().optional(),
+  bankAccount: z.string().optional(),
+  bankIfsc: z.string().optional(),
+  supplierType: z.string().min(1, "Supplier type is required"),
+  notes: z.string().optional(),
+});
+
+type SupplierForm = z.infer<typeof supplierSchema>;
 
 export default function NewSupplierPage() {
   const router = useRouter();
-
-  const supplierSchema = z.object({
-    name: z.string().min(1, "Supplier name is required"),
-    contactPerson: z.string().optional(),
-    email: z.string().email("Invalid email").optional().or(z.literal("")),
-    phone: z.string().min(10, "Phone is required"),
-    altPhone: z.string().optional(),
-    gstin: z.string().optional(),
-    pan: z.string().optional(),
-    addressLine1: z.string().min(1, "Address is required"),
-    addressLine2: z.string().optional(),
-    city: z.string().min(1, "City is required"),
-    state: z.string().min(1, "State is required"),
-    pincode: z.string().min(6, "Pincode is required"),
-    country: z.string().default("India"),
-    bankName: z.string().optional(),
-    bankBranch: z.string().optional(),
-    bankAccount: z.string().optional(),
-    bankIfsc: z.string().optional(),
-    supplierType: z.string().min(1, "Supplier type is required"),
-    notes: z.string().optional(),
-  });
-
-  type SupplierForm = z.infer<typeof supplierSchema>;
 
   const { register, handleSubmit, formState: { errors } } = useForm<SupplierForm>({
     resolver: zodResolver(supplierSchema),

@@ -1,23 +1,32 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { api } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
+
+const batchSchema = z.object({
+  orderId: z.string().min(1, "Please select an order"),
+  quantity: z.number().min(1, "Quantity required"),
+  remarks: z.string().optional(),
+});
+
+type BatchForm = z.infer<typeof batchSchema>;
 
 export default function NewProductionBatchPage() {
   const router = useRouter();
   const { data: orders } = api.orders.list.useQuery({ page: 1, limit: 100, status: "CONFIRMED" });
 
-  const batchSchema = z.object({
-    orderId: z.string().min(1, "Please select an order"),
-    quantity: z.number().min(1, "Quantity required"),
-    remarks: z.string().optional(),
-  });
-
-  type BatchForm = z.infer<typeof batchSchema>;
-
-  const { register, handleSubmit, control, setValue, watch, formState: { errors } } = useForm<BatchForm>({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<BatchForm>({
     resolver: zodResolver(batchSchema),
     defaultValues: { orderId: "", quantity: 1, remarks: "" },
   });
@@ -66,11 +75,13 @@ export default function NewProductionBatchPage() {
               </Select>
               {errors.orderId && <p className="text-xs text-red-500">{errors.orderId.message}</p>}
             </div>
+
             <div className="space-y-1.5">
               <Label>Batch quantity *</Label>
               <Input type="number" {...register("quantity", { valueAsNumber: true })} />
               {errors.quantity && <p className="text-xs text-red-500">{errors.quantity.message}</p>}
             </div>
+
             <div className="md:col-span-2 space-y-1.5">
               <Label>Remarks</Label>
               <Textarea {...register("remarks")} rows={4} placeholder="Optional notes" />
