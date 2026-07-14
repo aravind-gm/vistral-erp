@@ -12,7 +12,7 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  const { hashPassword } = await import("@better-auth/utils/password");
+  const { hashPassword } = await import("better-auth/crypto");
   const adminPassword = await hashPassword("Admin@1234");
 
   await prisma.company.upsert({

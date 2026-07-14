@@ -1,6 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/trpc";
+import { useSession } from "@/lib/auth-client";
 import {
   ShoppingCart,
   Users,
@@ -66,8 +69,35 @@ const ORDER_STATUS_LABELS: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const stats = api.dashboard.stats.useQuery();
-  const recentOrders = api.dashboard.recentOrders.useQuery();
+  const router = useRouter();
+  const { data: session, isPending } = useSession();
+  const isAuthorized = Boolean(session?.user);
+
+  useEffect(() => {
+    if (!isPending && !isAuthorized) {
+      router.replace("/login");
+    }
+  }, [isAuthorized, isPending, router]);
+
+  const stats = api.dashboard.stats.useQuery(undefined, {
+    enabled: isAuthorized,
+  });
+  const recentOrders = api.dashboard.recentOrders.useQuery(undefined, {
+    enabled: isAuthorized,
+  });
+
+  if (isPending || !isAuthorized) {
+    return (
+      <div className="space-y-6 pt-4">
+        <div className="h-8 w-48 rounded-xl bg-[#E5E7EB] animate-pulse" />
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="h-28 rounded-3xl bg-[#E5E7EB] animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pt-4">
