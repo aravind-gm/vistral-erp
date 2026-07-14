@@ -12,6 +12,9 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
+  const { hashPassword } = await import("@better-auth/utils/password");
+  const adminPassword = await hashPassword("Admin@1234");
+
   await prisma.company.upsert({
     where: { gstin: "33AAAAA0000A1Z5" },
     update: {},
@@ -32,7 +35,7 @@ async function main() {
     },
   });
 
-  await prisma.user.upsert({
+  const adminUser = await prisma.user.upsert({
     where: { email: "admin@vistral.in" },
     update: {},
     create: {
@@ -46,6 +49,30 @@ async function main() {
       updatedBy: "system",
     },
   });
+
+  const existingAccount = await prisma.account.findFirst({
+    where: {
+      userId: adminUser.id,
+      providerId: "credential",
+      accountId: adminUser.email,
+    },
+  });
+
+  if (!existingAccount) {
+    await prisma.account.create({
+      data: {
+        userId: adminUser.id,
+        providerId: "credential",
+        accountId: adminUser.email,
+        password: adminPassword,
+      },
+    });
+  } else if (!existingAccount.password) {
+    await prisma.account.update({
+      where: { id: existingAccount.id },
+      data: { password: adminPassword },
+    });
+  }
 
   console.log("Seed data inserted successfully.");
 }

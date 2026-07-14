@@ -64,13 +64,19 @@ export default function LoginPage() {
             <CardDescription>Enter your credentials to access the ERP</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4"
+              autoComplete="off"
+              suppressHydrationWarning
+            >
               <div className="space-y-1.5">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="you@company.com"
+                  autoComplete="username"
                   startIcon={<Mail className="h-4 w-4" />}
                   {...form.register("email")}
                 />
@@ -87,6 +93,7 @@ export default function LoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
+                  autoComplete="current-password"
                   startIcon={<Lock className="h-4 w-4" />}
                   endIcon={
                     <button
