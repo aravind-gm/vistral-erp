@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,6 +28,34 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema) as Resolver<LoginForm>,
     defaultValues: { email: "", password: "" },
   });
+
+  useEffect(() => {
+    const handlePasswordAutoFill = () => {
+      if (!window) return;
+      const emailInput = document.getElementById("email") as HTMLInputElement | null;
+      const passwordInput = document.getElementById("password") as HTMLInputElement | null;
+      if (!emailInput || !passwordInput) return;
+
+      const currentEmail = emailInput.value;
+      const currentPassword = passwordInput.value;
+
+      if (currentEmail && currentPassword) {
+        form.setValue("email", currentEmail, {
+          shouldValidate: false,
+          shouldDirty: false,
+          shouldTouch: false,
+        });
+        form.setValue("password", currentPassword, {
+          shouldValidate: false,
+          shouldDirty: false,
+          shouldTouch: false,
+        });
+      }
+    };
+
+    handlePasswordAutoFill();
+    window.requestAnimationFrame(handlePasswordAutoFill);
+  }, [form]);
 
   async function onSubmit(values: LoginForm) {
     const result = await signIn.email({
@@ -66,17 +94,34 @@ export default function LoginPage() {
           <CardContent>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4"
+              className="space-y-4 relative"
               autoComplete="off"
               suppressHydrationWarning
             >
+              <input
+                type="text"
+                name="username"
+                autoComplete="username"
+                className="pointer-events-none absolute left-[-9999px] h-0 w-0 opacity-0"
+                tabIndex={-1}
+                aria-hidden="true"
+              />
+              <input
+                type="password"
+                name="current-password"
+                autoComplete="current-password"
+                className="pointer-events-none absolute left-[-9999px] h-0 w-0 opacity-0"
+                tabIndex={-1}
+                aria-hidden="true"
+              />
+
               <div className="space-y-1.5">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="you@company.com"
-                  autoComplete="username"
+                  autoComplete="off"
                   startIcon={<Mail className="h-4 w-4" />}
                   {...form.register("email")}
                 />
@@ -93,7 +138,7 @@ export default function LoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   startIcon={<Lock className="h-4 w-4" />}
                   endIcon={
                     <button
