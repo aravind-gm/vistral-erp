@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ import { Plus, Package, AlertCircle, TrendingDown } from "lucide-react";
 import { formatCurrency } from "@/features/dashboard/utils/formatters";
 
 export default function YarnPage() {
+  const router = useRouter();
   const [tab, setTab] = useState("inventory");
   const [yarnTypeSearch, setYarnTypeSearch] = useState("");
 
@@ -26,7 +28,7 @@ export default function YarnPage() {
           <h1 className="text-2xl font-bold text-gray-900">Yarn Management</h1>
           <p className="text-sm text-gray-500 mt-1">Inventory, procurement and yarn types</p>
         </div>
-        <Button>
+        <Button onClick={() => router.push("/yarn/procurement/new") }>
           <Plus className="h-4 w-4 mr-2" />
           New Procurement
         </Button>
@@ -125,7 +127,7 @@ export default function YarnPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Procurement Orders</CardTitle>
-              <Button size="sm">
+              <Button size="sm" onClick={() => router.push("/yarn/procurement/new") }>
                 <Plus className="h-4 w-4 mr-1" /> New PO
               </Button>
             </CardHeader>
@@ -188,7 +190,7 @@ export default function YarnPage() {
                   className="w-48 h-8"
                 />
               </div>
-              <Button size="sm">
+              <Button size="sm" onClick={() => router.push("/settings/yarn-types") }>
                 <Plus className="h-4 w-4 mr-1" /> Add Type
               </Button>
             </CardHeader>

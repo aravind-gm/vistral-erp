@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 
 export default function SuppliersPage() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
@@ -43,7 +44,7 @@ export default function SuppliersPage() {
             Manage yarn and material suppliers
           </p>
         </div>
-        <Button>
+        <Button onClick={() => router.push("/suppliers/new") }>
           <Plus className="h-4 w-4 mr-2" />
           Add Supplier
         </Button>

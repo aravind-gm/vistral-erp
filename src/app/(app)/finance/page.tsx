@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,7 +47,7 @@ export default function FinancePage() {
           <h1 className="text-2xl font-bold text-gray-900">Finance</h1>
           <p className="text-sm text-gray-500 mt-1">Invoices, payments and GST reports</p>
         </div>
-        <Button>
+        <Button onClick={() => router.push("/finance/invoices/new") }>
           <Plus className="h-4 w-4 mr-2" />
           New Invoice
         </Button>

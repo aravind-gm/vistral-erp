@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,7 @@ const BATCH_STATUS_VARIANT: Record<string, "default" | "secondary" | "success" |
 };
 
 export default function ProductionPage() {
+  const router = useRouter();
   const [tab, setTab] = useState("batches");
   const [page, setPage] = useState(1);
 
@@ -30,7 +32,7 @@ export default function ProductionPage() {
           <h1 className="text-2xl font-bold text-gray-900">Production</h1>
           <p className="text-sm text-gray-500 mt-1">Track batches through the production floor</p>
         </div>
-        <Button>
+        <Button onClick={() => router.push("/production/new") }>
           <Plus className="h-4 w-4 mr-2" />
           New Batch
         </Button>
