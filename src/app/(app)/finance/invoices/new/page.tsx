@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { api } from "@/lib/trpc";
@@ -54,7 +54,7 @@ export default function NewInvoicePage() {
     setValue,
     formState: { errors },
   } = useForm<InvoiceForm>({
-    resolver: zodResolver(invoiceFormSchema),
+    resolver: zodResolver(invoiceFormSchema) as Resolver<InvoiceForm>,
     defaultValues: {
       orderId: "",
       customerId: "",

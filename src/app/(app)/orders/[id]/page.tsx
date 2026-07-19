@@ -210,8 +210,8 @@ export default function OrderDetailPage() {
                         <td className="px-3 py-2">{detail.color}</td>
                         <td className="px-3 py-2">{detail.size ?? "-"}</td>
                         <td className="px-3 py-2 text-right">{detail.quantity}</td>
-                        <td className="px-3 py-2 text-right">{detail.unitPrice.toLocaleString("en-IN")}</td>
-                        <td className="px-3 py-2 text-right">{detail.amount.toLocaleString("en-IN")}</td>
+                        <td className="px-3 py-2 text-right">{Number(detail.unitPrice).toLocaleString("en-IN")}</td>
+                        <td className="px-3 py-2 text-right">{Number(detail.amount).toLocaleString("en-IN")}</td>
                       </tr>
                     ))}
                   </tbody>

@@ -20,6 +20,7 @@ const INVOICE_STATUS_VARIANT: Record<string, "default" | "success" | "warning" |
 };
 
 export default function FinancePage() {
+  const router = useRouter();
   const [tab, setTab] = useState("invoices");
   const [page, setPage] = useState(1);
 
