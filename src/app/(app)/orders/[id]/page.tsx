@@ -290,7 +290,7 @@ export default function OrderDetailPage() {
               </div>
             </div>
 
-            <Button type="submit" loading={updateCosting.isLoading}>
+            <Button type="submit" loading={updateCosting.isPending}>
               Save costing
             </Button>
           </form>
