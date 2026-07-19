@@ -244,7 +244,7 @@ export default function PurchasePage() {
                     <SelectValue placeholder="Select Supplier" />
                   </SelectTrigger>
                   <SelectContent>
-                    {suppliers?.data.map((supp) => (
+                    {suppliers?.data?.data?.map((supp: any) => (
                       <SelectItem key={supp.id} value={supp.id}>{supp.name} ({supp.supplierType})</SelectItem>
                     ))}
                   </SelectContent>
