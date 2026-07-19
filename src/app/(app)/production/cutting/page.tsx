@@ -12,7 +12,16 @@ export default function Page() {
         icon: Scissors,
         statusLabel: "Cutting status",
         emptyMessage: "No cutting batches yet. Create production batches to begin cutting.",
+        stageNote: "Cutting converts approved fabric into pieces, so the team needs clear data for plies, fabric usage, cut pieces, and wastage before stitching can start.",
+        workflowSteps: ["Confirm plies and marker plan", "Record fabric usage and cut pieces", "Pass bundles to stitching"],
         getStatus: (batch) => batch.cutting?.status ?? "PENDING",
+        details: [
+          { label: "Plies", value: (batch) => batch.cutting?.pliesCount ?? "-" },
+          { label: "Fabric used", value: (batch) => batch.cutting?.fabricUsed ?? "-" },
+          { label: "Cut pieces", value: (batch) => batch.cutting?.cutPieces ?? "-" },
+          { label: "Wastage", value: (batch) => batch.cutting?.wastage ?? "-" },
+          { label: "Marker efficiency", value: (batch) => batch.cutting?.markerEfficiency ?? "-" },
+        ],
       }}
     />
   );
