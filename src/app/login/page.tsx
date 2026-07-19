@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Factory, Eye, EyeOff, Lock, Mail } from "lucide-react";
@@ -25,37 +25,9 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema) as Resolver<LoginForm>,
-    defaultValues: { email: "", password: "" },
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "admin@vistral.in", password: "Admin@123" },
   });
-
-  useEffect(() => {
-    const handlePasswordAutoFill = () => {
-      if (!window) return;
-      const emailInput = document.getElementById("email") as HTMLInputElement | null;
-      const passwordInput = document.getElementById("password") as HTMLInputElement | null;
-      if (!emailInput || !passwordInput) return;
-
-      const currentEmail = emailInput.value;
-      const currentPassword = passwordInput.value;
-
-      if (currentEmail && currentPassword) {
-        form.setValue("email", currentEmail, {
-          shouldValidate: false,
-          shouldDirty: false,
-          shouldTouch: false,
-        });
-        form.setValue("password", currentPassword, {
-          shouldValidate: false,
-          shouldDirty: false,
-          shouldTouch: false,
-        });
-      }
-    };
-
-    handlePasswordAutoFill();
-    window.requestAnimationFrame(handlePasswordAutoFill);
-  }, [form]);
 
   async function onSubmit(values: LoginForm) {
     const result = await signIn.email({
@@ -95,25 +67,8 @@ export default function LoginPage() {
             <form
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 relative"
-              autoComplete="off"
-              suppressHydrationWarning
+              autoComplete="on"
             >
-              <input
-                type="text"
-                name="username"
-                autoComplete="username"
-                className="pointer-events-none absolute left-[-9999px] h-0 w-0 opacity-0"
-                tabIndex={-1}
-                aria-hidden="true"
-              />
-              <input
-                type="password"
-                name="current-password"
-                autoComplete="current-password"
-                className="pointer-events-none absolute left-[-9999px] h-0 w-0 opacity-0"
-                tabIndex={-1}
-                aria-hidden="true"
-              />
 
               <div className="space-y-1.5">
                 <Label htmlFor="email">Email</Label>
@@ -121,7 +76,7 @@ export default function LoginPage() {
                   id="email"
                   type="email"
                   placeholder="you@company.com"
-                  autoComplete="off"
+                  autoComplete="email"
                   startIcon={<Mail className="h-4 w-4" />}
                   {...form.register("email")}
                 />
@@ -138,7 +93,7 @@ export default function LoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  autoComplete="new-password"
+                  autoComplete="current-password"
                   startIcon={<Lock className="h-4 w-4" />}
                   endIcon={
                     <button
@@ -171,6 +126,9 @@ export default function LoginPage() {
                 Sign in
               </Button>
             </form>
+            <div className="mt-4 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-3 text-xs text-[#6B7280]">
+              Test login: admin@vistral.in / Admin@123
+            </div>
           </CardContent>
         </Card>
 
