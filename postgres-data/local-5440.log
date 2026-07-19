@@ -12,3 +12,11 @@
 2026-07-19 18:43:32.792 IST [17612] LOG:  checkpoint starting: end-of-recovery immediate wait
 2026-07-19 18:43:32.838 IST [17612] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.005 s, sync=0.004 s, total=0.049 s; sync files=2, longest=0.002 s, average=0.002 s; distance=0 kB, estimate=0 kB; lsn=0/24BEF88, redo lsn=0/24BEF88
 2026-07-19 18:43:32.899 IST [25060] LOG:  database system is ready to accept connections
+2026-07-19 18:48:32.846 IST [17612] LOG:  checkpoint starting: time
+2026-07-19 18:48:32.991 IST [17612] LOG:  checkpoint complete: wrote 2 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.113 s, sync=0.003 s, total=0.145 s; sync files=2, longest=0.002 s, average=0.002 s; distance=1 kB, estimate=1 kB; lsn=0/24BF4B0, redo lsn=0/24BF478
+2026-07-19 18:48:36.838 IST [30456] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-07-19 18:48:41.507 IST [17568] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-07-19 18:48:57.044 IST [27344] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
