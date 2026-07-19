@@ -474,7 +474,7 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
     }
   };
 
-  const selectedBatch = selectedBatchQuery.data;
+  const selectedBatch = selectedBatchQuery.data as any;
 
   useEffect(() => {
     if (selectedBatch) {
@@ -484,7 +484,7 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
     }
   }, [selectedBatch?.id, config]);
 
-  const rows = batches.data?.data ?? [];
+  const rows = (batches.data?.data as any) ?? [];
   const summary = useMemo(() => {
     const total = rows.length;
     const pending = rows.filter((batch) => config.getStatus(batch) === "PENDING").length;
@@ -494,8 +494,6 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
 
     return { total, pending, active, completed, blocked };
   }, [config, rows]);
-
-  const selectedBatch = selectedBatchQuery.data;
 
   return (
     <div className="space-y-6 pt-4">
