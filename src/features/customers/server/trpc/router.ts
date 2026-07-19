@@ -99,6 +99,7 @@ export const customersRouter = createTRPCRouter({
               orderNo: true,
               status: true,
               quantity: true,
+              unit: true,
               createdAt: true,
             },
           },
