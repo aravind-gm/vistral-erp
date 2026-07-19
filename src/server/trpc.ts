@@ -4,6 +4,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { decodeGenericSession, TEST_AUTH_COOKIE } from "@/lib/generic-auth";
 
 export interface Context {
   req: NextRequest;
@@ -18,6 +19,23 @@ export interface Context {
 }
 
 export async function createTRPCContext(req: NextRequest): Promise<Context> {
+  const genericCookie = req.cookies.get(TEST_AUTH_COOKIE)?.value;
+  const genericUser = decodeGenericSession(genericCookie);
+
+  if (genericUser) {
+    return {
+      req,
+      session: {
+        user: {
+          id: genericUser.id,
+          name: genericUser.name,
+          email: genericUser.email,
+          role: genericUser.role,
+        },
+      },
+    };
+  }
+
   const session = await auth.api.getSession({ headers: req.headers });
   return {
     req,
