@@ -174,7 +174,7 @@ export type ProductionBatchRecord = {
 
 export type ProductionPhaseDetail = {
   label: string;
-  value: (batch: ProductionBatchRecord) => ReactNode;
+  value: (batch: any) => any;
 };
 
 export type ProductionPhaseConfig = {
