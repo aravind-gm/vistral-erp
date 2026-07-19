@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { api } from "@/lib/trpc";
@@ -41,7 +41,7 @@ export default function NewSupplierPage() {
   const router = useRouter();
 
   const { register, handleSubmit, formState: { errors } } = useForm<SupplierForm>({
-    resolver: zodResolver(supplierSchema),
+    resolver: zodResolver(supplierSchema) as Resolver<SupplierForm>,
     defaultValues: {
       name: "",
       contactPerson: "",
