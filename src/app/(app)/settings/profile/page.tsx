@@ -52,7 +52,7 @@ export default function ProfilePage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <p className="text-xs text-[#6B7280]">Role</p>
-              <p className="font-medium text-[#111827]">{session.user.role ?? "User"}</p>
+              <p className="font-medium text-[#111827]">{(session.user as { role?: string }).role ?? "User"}</p>
             </div>
             <div>
               <p className="text-xs text-[#6B7280]">User ID</p>
