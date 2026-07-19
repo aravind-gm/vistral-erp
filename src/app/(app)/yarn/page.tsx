@@ -20,6 +20,8 @@ export default function YarnPage() {
   const inventory = api.yarn.getInventory.useQuery();
   const yarnTypes = api.yarn.listTypes.useQuery(yarnTypeSearch ? { search: yarnTypeSearch } : undefined);
   const procurements = api.yarn.listProcurements.useQuery({ page: 1, limit: 20 });
+  const noYarnTypes = yarnTypes.data?.length === 0;
+  const noProcurements = procurements.data?.data.length === 0;
 
   return (
     <div className="space-y-6">
@@ -140,6 +142,13 @@ export default function YarnPage() {
                 <div className="p-12 text-center text-gray-400">
                   <TrendingDown className="h-10 w-10 mx-auto mb-3 text-gray-300" />
                   <p>No procurement orders yet</p>
+                  <Button
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => router.push("/yarn/procurement/new")}
+                  >
+                    <Plus className="h-4 w-4 mr-1" /> Create first procurement
+                  </Button>
                 </div>
               ) : (
                 <table className="w-full text-sm">
@@ -198,6 +207,14 @@ export default function YarnPage() {
               {yarnTypes.isLoading ? (
                 <div className="p-6 space-y-3">
                   {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+                </div>
+              ) : noYarnTypes ? (
+                <div className="p-12 text-center text-gray-400">
+                  <Package className="h-10 w-10 mx-auto mb-3 text-gray-300" />
+                  <p>No yarn types yet</p>
+                  <Button size="sm" className="mt-4" onClick={() => router.push("/settings/yarn-types") }>
+                    <Plus className="h-4 w-4 mr-1" /> Add Yarn Type
+                  </Button>
                 </div>
               ) : (
                 <table className="w-full text-sm">

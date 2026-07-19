@@ -37,6 +37,8 @@ export default function NewProcurementPage() {
   const router = useRouter();
   const { data: suppliers } = api.suppliers.list.useQuery({ page: 1, limit: 100 });
   const { data: yarnTypes } = api.yarn.listTypes.useQuery();
+  const noSuppliers = suppliers?.data.length === 0;
+  const noYarnTypes = yarnTypes?.length === 0;
 
   const {
     register,
@@ -92,18 +94,34 @@ export default function NewProcurementPage() {
           <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
               <Label>Supplier *</Label>
-              <Select value={watch("supplierId")} onValueChange={(value) => setValue("supplierId", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select supplier" />
-                </SelectTrigger>
-                <SelectContent>
-                  {suppliers?.data.map((supplier) => (
-                    <SelectItem key={supplier.id} value={supplier.id}>
-                      {supplier.name} ({supplier.code})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {noSuppliers ? (
+                <div className="rounded-xl border border-dashed border-gray-300 bg-[#FAFAFA] p-4 text-sm text-gray-600">
+                  <p>No suppliers available yet.</p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Add a supplier before creating procurement orders.
+                  </p>
+                  <Button
+                    size="sm"
+                    className="mt-3"
+                    onClick={() => router.push("/suppliers/new")}
+                  >
+                    <Plus className="h-4 w-4 mr-1" /> Add Supplier
+                  </Button>
+                </div>
+              ) : (
+                <Select value={watch("supplierId")} onValueChange={(value) => setValue("supplierId", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select supplier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {suppliers?.data.map((supplier) => (
+                      <SelectItem key={supplier.id} value={supplier.id}>
+                        {supplier.name} ({supplier.code})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               {errors.supplierId && <p className="text-xs text-red-500">{errors.supplierId.message}</p>}
             </div>
             <div className="space-y-1.5">
@@ -124,76 +142,117 @@ export default function NewProcurementPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Items</CardTitle>
-            <Button type="button" size="sm" variant="outline" onClick={() => append({ yarnTypeId: "", quantity: 0.1, unit: "KG", unitPrice: 0, amount: 0, hsn: "", gstPercent: 5 })}>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => append({ yarnTypeId: "", quantity: 0.1, unit: "KG", unitPrice: 0, amount: 0, hsn: "", gstPercent: 5 })}
+              disabled={noYarnTypes}
+            >
               <Plus className="h-4 w-4 mr-1" /> Add Item
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {fields.map((field, index) => (
-              <div key={field.id} className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] items-end">
-                <div className="space-y-1.5 md:col-span-2">
-                  <Label>Yarn type *</Label>
-                  <Select value={watch(`items.${index}.yarnTypeId`)} onValueChange={(value) => setValue(`items.${index}.yarnTypeId`, value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select yarn type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {yarnTypes?.map((type) => (
-                        <SelectItem key={type.id} value={type.id}>
-                          {type.name} {type.count ? `(${type.count})` : ""}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label>Qty</Label>
-                  <Input
-                    type="number"
-                    step="0.001"
-                    {...register(`items.${index}.quantity`, {
-                      valueAsNumber: true,
-                      onChange: (event) => {
-                        const qty = parseFloat(event.target.value) || 0;
-                        const rate = watch(`items.${index}.unitPrice`) || 0;
-                        setValue(`items.${index}.amount`, qty * rate);
-                      },
-                    })}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label>Unit price</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...register(`items.${index}.unitPrice`, {
-                      valueAsNumber: true,
-                      onChange: (event) => {
-                        const rate = parseFloat(event.target.value) || 0;
-                        const qty = watch(`items.${index}.quantity`) || 0;
-                        setValue(`items.${index}.amount`, qty * rate);
-                      },
-                    })}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label>Amount</Label>
-                  <Input type="number" step="0.01" {...register(`items.${index}.amount`, { valueAsNumber: true })} />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label>GST %</Label>
-                  <Input type="number" step="0.1" {...register(`items.${index}.gstPercent`, { valueAsNumber: true })} />
-                </div>
-
-                <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length === 1}>
-                  <Trash2 className="h-4 w-4 text-red-500" />
+            {noYarnTypes ? (
+              <div className="rounded-xl border border-dashed border-gray-300 bg-[#FAFAFA] p-8 text-center text-sm text-gray-600">
+                <p>No yarn types available yet.</p>
+                <p className="text-xs text-gray-500 mt-2">
+                  Add yarn types before creating procurement items.
+                </p>
+                <Button
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => router.push("/settings/yarn-types")}
+                >
+                  <Plus className="h-4 w-4 mr-1" /> Add Yarn Type
                 </Button>
               </div>
-            ))}
+            ) : (
+              <>
+                {fields.map((field, index) => (
+                  <div key={field.id} className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] items-end">
+                    <div className="space-y-1.5 md:col-span-2">
+                      <Label>Yarn type *</Label>
+                      <Select
+                        value={watch(`items.${index}.yarnTypeId`)}
+                        onValueChange={(value) => setValue(`items.${index}.yarnTypeId`, value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select yarn type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {yarnTypes?.map((type) => (
+                            <SelectItem key={type.id} value={type.id}>
+                              {type.name} {type.count ? `(${type.count})` : ""}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label>Qty</Label>
+                      <Input
+                        type="number"
+                        step="0.001"
+                        {...register(`items.${index}.quantity`, {
+                          valueAsNumber: true,
+                          onChange: (event) => {
+                            const qty = parseFloat(event.target.value) || 0;
+                            const rate = watch(`items.${index}.unitPrice`) || 0;
+                            setValue(`items.${index}.amount`, qty * rate);
+                          },
+                        })}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label>Unit price</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        {...register(`items.${index}.unitPrice`, {
+                          valueAsNumber: true,
+                          onChange: (event) => {
+                            const rate = parseFloat(event.target.value) || 0;
+                            const qty = watch(`items.${index}.quantity`) || 0;
+                            setValue(`items.${index}.amount`, qty * rate);
+                          },
+                        })}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label>Amount</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        {...register(`items.${index}.amount`, { valueAsNumber: true })}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label>GST %</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        {...register(`items.${index}.gstPercent`, { valueAsNumber: true })}
+                      />
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => remove(index)}
+                      disabled={fields.length === 1}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </div>
+                ))}
+              </>
+            )}
           </CardContent>
         </Card>
 
