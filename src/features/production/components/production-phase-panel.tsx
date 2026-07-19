@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
-import type { ComponentType, SVGProps } from "react";
+import type { ComponentType, ReactNode, SVGProps } from "react";
 import { formatDate } from "@/features/dashboard/utils/formatters";
 
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "success" | "warning" | "destructive" | "outline"> = {
@@ -21,6 +21,11 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "success" | "warn
   NOT_STARTED: "secondary",
 };
 
+export type ProductionPhaseDetail = {
+  label: string;
+  value: (batch: any) => ReactNode;
+};
+
 export type ProductionPhaseConfig = {
   title: string;
   description: string;
@@ -28,6 +33,20 @@ export type ProductionPhaseConfig = {
   statusLabel: string;
   emptyMessage: string;
   getStatus: (batch: any) => string;
+  details: ProductionPhaseDetail[];
+};
+
+const formatDetailValue = (value: unknown) => {
+  if (value === null || value === undefined || value === "") {
+    return "-";
+  }
+  if (typeof value === "boolean") {
+    return value ? "Yes" : "No";
+  }
+  if (value instanceof Date) {
+    return formatDate(value);
+  }
+  return String(value);
 };
 
 export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig }) {
@@ -79,6 +98,7 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
                     <th className="text-left px-6 py-3 font-medium text-gray-600">Customer</th>
                     <th className="text-left px-6 py-3 font-medium text-gray-600">{config.statusLabel}</th>
                     <th className="text-left px-6 py-3 font-medium text-gray-600">Created</th>
+                    <th className="text-left px-6 py-3 font-medium text-gray-600">Stage work</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -93,6 +113,16 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
                           <Badge variant={STATUS_VARIANT[status] ?? "secondary"}>{status}</Badge>
                         </td>
                         <td className="px-6 py-4 text-gray-500">{batch.createdAt ? formatDate(batch.createdAt) : "-"}</td>
+                        <td className="px-6 py-4">
+                          <div className="space-y-1 text-xs text-gray-600">
+                            {config.details.map((detail) => (
+                              <div key={detail.label} className="flex gap-1">
+                                <span className="font-semibold text-gray-700">{detail.label}:</span>
+                                <span>{typeof detail.value(batch) === "string" ? formatDetailValue(detail.value(batch)) : detail.value(batch)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </td>
                       </tr>
                     );
                   })}
