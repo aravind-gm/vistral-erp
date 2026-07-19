@@ -42,8 +42,22 @@ export default function FinancePage() {
   const router = useRouter();
   const [tab, setTab] = useState("invoices");
   const [page, setPage] = useState(1);
+  const [paymentsPage, setPaymentsPage] = useState(1);
+  const [isRecordPaymentOpen, setIsRecordPaymentOpen] = useState(false);
+  const [paymentForm, setPaymentForm] = useState({
+    invoiceId: "",
+    amount: "",
+    paymentMode: "UPI" as "CASH" | "CHEQUE" | "NEFT" | "RTGS" | "UPI",
+    referenceNo: "",
+    bankName: "",
+    remarks: "",
+    paymentDate: new Date().toISOString().split("T")[0],
+  });
 
   const invoices = api.finance.listInvoices.useQuery({ page, limit: 20 });
+  const payments = api.finance.listPayments.useQuery({ page: paymentsPage, limit: 20 });
+  const recordPaymentMutation = api.finance.recordPayment.useMutation();
+
   const now = new Date();
   const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
   const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
@@ -51,6 +65,69 @@ export default function FinancePage() {
     fromDate: firstDay,
     toDate: lastDay,
   });
+
+  const handleExportGSTR1 = () => {
+    if (!gstReport.data?.invoices?.length) {
+      toast.error("No invoices found for this month's GST report");
+      return;
+    }
+    const reportData = gstReport.data.invoices.map((inv: any) => ({
+      "Invoice No": inv.invoiceNo,
+      "Invoice Date": formatDate(inv.invoiceDate),
+      "Customer Name": inv.customer?.name || "-",
+      "Customer GSTIN": inv.customer?.gstin || "-",
+      "State": inv.customer?.state || "-",
+      "Taxable Value": Number(inv.taxableAmount),
+      "CGST (50%)": Number(inv.cgst),
+      "SGST (50%)": Number(inv.sgst),
+      "IGST (100%)": Number(inv.igst),
+      "Total GST Amount": Number(inv.cgst) + Number(inv.sgst) + Number(inv.igst),
+      "Total Value": Number(inv.totalAmount),
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(reportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "GSTR-1 Report");
+    XLSX.writeFile(workbook, `GSTR1_Report_${new Date().toISOString().split("T")[0]}.xlsx`);
+    toast.success("Excel GSTR-1 report downloaded!");
+  };
+
+  const handleSavePayment = async () => {
+    if (!paymentForm.invoiceId) {
+      toast.error("Select an invoice");
+      return;
+    }
+    if (!paymentForm.amount || Number(paymentForm.amount) <= 0) {
+      toast.error("Enter a valid payment amount");
+      return;
+    }
+    try {
+      await recordPaymentMutation.mutateAsync({
+        invoiceId: paymentForm.invoiceId,
+        amount: Number(paymentForm.amount),
+        paymentDate: new Date(paymentForm.paymentDate),
+        paymentMode: paymentForm.paymentMode,
+        referenceNo: paymentForm.referenceNo || undefined,
+        bankName: paymentForm.bankName || undefined,
+        remarks: paymentForm.remarks || undefined,
+      });
+      toast.success("Payment recorded successfully");
+      setIsRecordPaymentOpen(false);
+      setPaymentForm({
+        invoiceId: "",
+        amount: "",
+        paymentMode: "UPI",
+        referenceNo: "",
+        bankName: "",
+        remarks: "",
+        paymentDate: new Date().toISOString().split("T")[0],
+      });
+      invoices.refetch();
+      payments.refetch();
+      gstReport.refetch();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to record payment");
+    }
+  };
 
   const totalPaid = invoices.data?.data
     .filter((inv: { paymentStatus: string }) => inv.paymentStatus === "PAID")
