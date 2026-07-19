@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Plus, History, Warning, AlertTriangle, Package, Warehouse, Layers } from "lucide-react";
+import { ArrowLeft, Plus, History, AlertTriangle, Package, Warehouse, Layers } from "lucide-react";
 import { formatCurrency, formatDate } from "@/features/dashboard/utils/formatters";
 
 export default function YarnInventoryPage() {
