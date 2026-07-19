@@ -188,6 +188,62 @@ export const ordersRouter = createTRPCRouter({
       });
     }),
 
+  updateCosting: protectedProcedure
+    .input(z.object({
+      orderId: z.string(),
+      yarnCost: z.number().min(0).optional(),
+      knittingCost: z.number().min(0).optional(),
+      dyeingCost: z.number().min(0).optional(),
+      printingCost: z.number().min(0).optional(),
+      compactingCost: z.number().min(0).optional(),
+      cuttingCost: z.number().min(0).optional(),
+      stitchingCost: z.number().min(0).optional(),
+      packingCost: z.number().min(0).optional(),
+      overheadPercent: z.number().min(0).max(100).optional(),
+      profitPercent: z.number().min(0).max(100).optional(),
+      remarks: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const costing = await prisma.orderCosting.upsert({
+        where: { orderId: input.orderId },
+        create: {
+          orderId: input.orderId,
+          yarnCost: input.yarnCost ?? 0,
+          knittingCost: input.knittingCost ?? 0,
+          dyeingCost: input.dyeingCost ?? 0,
+          printingCost: input.printingCost ?? 0,
+          compactingCost: input.compactingCost ?? 0,
+          cuttingCost: input.cuttingCost ?? 0,
+          stitchingCost: input.stitchingCost ?? 0,
+          packingCost: input.packingCost ?? 0,
+          overheadPercent: input.overheadPercent ?? 10,
+          profitPercent: input.profitPercent ?? 15,
+          totalCostPerPc: 0,
+          sellingPricePerPc: 0,
+          totalOrderValue: 0,
+          remarks: input.remarks,
+          createdBy: ctx.session.user.id,
+          updatedBy: ctx.session.user.id,
+        },
+        update: {
+          yarnCost: input.yarnCost ?? undefined,
+          knittingCost: input.knittingCost ?? undefined,
+          dyeingCost: input.dyeingCost ?? undefined,
+          printingCost: input.printingCost ?? undefined,
+          compactingCost: input.compactingCost ?? undefined,
+          cuttingCost: input.cuttingCost ?? undefined,
+          stitchingCost: input.stitchingCost ?? undefined,
+          packingCost: input.packingCost ?? undefined,
+          overheadPercent: input.overheadPercent ?? undefined,
+          profitPercent: input.profitPercent ?? undefined,
+          remarks: input.remarks ?? undefined,
+          updatedBy: ctx.session.user.id,
+        },
+      });
+
+      return costing;
+    }),
+
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
