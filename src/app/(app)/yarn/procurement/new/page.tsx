@@ -51,7 +51,7 @@ export default function NewProcurementPage() {
     resolver: zodResolver(procurementSchema),
     defaultValues: {
       supplierId: "",
-      expectedDate: "",
+      expectedDate: undefined,
       remarks: "",
       items: [{ yarnTypeId: "", quantity: 0.1, unit: "KG", unitPrice: 0, amount: 0, hsn: "", gstPercent: 5 }],
     },
