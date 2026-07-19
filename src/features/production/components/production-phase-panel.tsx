@@ -487,10 +487,10 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
   const rows = (batches.data?.data as any) ?? [];
   const summary = useMemo(() => {
     const total = rows.length;
-    const pending = rows.filter((batch) => config.getStatus(batch) === "PENDING").length;
-    const active = rows.filter((batch) => config.getStatus(batch) === "IN_PROGRESS").length;
-    const completed = rows.filter((batch) => ["COMPLETED", "PASSED", "DISPATCHED"].includes(config.getStatus(batch))).length;
-    const blocked = rows.filter((batch) => ["ON_HOLD", "FAILED"].includes(config.getStatus(batch))).length;
+    const pending = rows.filter((batch: any) => config.getStatus(batch) === "PENDING").length;
+    const active = rows.filter((batch: any) => config.getStatus(batch) === "IN_PROGRESS").length;
+    const completed = rows.filter((batch: any) => ["COMPLETED", "PASSED", "DISPATCHED"].includes(config.getStatus(batch))).length;
+    const blocked = rows.filter((batch: any) => ["ON_HOLD", "FAILED"].includes(config.getStatus(batch))).length;
 
     return { total, pending, active, completed, blocked };
   }, [config, rows]);
