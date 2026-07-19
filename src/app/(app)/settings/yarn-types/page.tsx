@@ -159,7 +159,7 @@ export default function Page() {
               <label className="block text-sm font-medium text-gray-700">HSN</label>
               <Input {...register("hsn")} />
             </div>
-            <Button type="submit" loading={createYarnType.isLoading}>
+            <Button type="submit" loading={createYarnType.isPending}>
               Create yarn type
             </Button>
           </form>
