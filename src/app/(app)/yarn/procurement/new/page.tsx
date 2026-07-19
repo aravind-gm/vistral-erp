@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { api } from "@/lib/trpc";
@@ -16,7 +16,7 @@ import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 
 const procurementSchema = z.object({
   supplierId: z.string().min(1, "Please select a supplier"),
-  expectedDate: z.string().optional(),
+  expectedDate: z.date().optional(),
   remarks: z.string().optional(),
   items: z.array(
     z.object({
@@ -109,27 +109,39 @@ export default function NewProcurementPage() {
                   </Button>
                 </div>
               ) : (
-                <Select value={watch("supplierId")} onValueChange={(value) => setValue("supplierId", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select supplier" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {suppliers?.data.map((supplier) => (
-                      <SelectItem key={supplier.id} value={supplier.id}>
-                        {supplier.name} ({supplier.code})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Controller
+                  control={control}
+                  name="supplierId"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select supplier" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {suppliers?.data.map((supplier) => (
+                          <SelectItem key={supplier.id} value={supplier.id}>
+                            {supplier.name} ({supplier.code})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               )}
               {errors.supplierId && <p className="text-xs text-red-500">{errors.supplierId.message}</p>}
             </div>
             <div className="space-y-1.5">
               <Label>Expected date</Label>
-              <Input
-                type="date"
-                value={watch("expectedDate") ? new Date(watch("expectedDate") as Date).toISOString().split("T")[0] : ""}
-                onChange={(e) => setValue("expectedDate", e.target.value ? new Date(e.target.value) : undefined)}
+              <Controller
+                control={control}
+                name="expectedDate"
+                render={({ field }) => (
+                  <Input
+                    type="date"
+                    value={field.value ? new Date(field.value).toISOString().split("T")[0] : ""}
+                    onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
+                  />
+                )}
               />
             </div>
             <div className="md:col-span-2 space-y-1.5">
@@ -173,21 +185,24 @@ export default function NewProcurementPage() {
                   <div key={field.id} className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] items-end">
                     <div className="space-y-1.5 md:col-span-2">
                       <Label>Yarn type *</Label>
-                      <Select
-                        value={watch(`items.${index}.yarnTypeId`)}
-                        onValueChange={(value) => setValue(`items.${index}.yarnTypeId`, value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select yarn type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {yarnTypes?.map((type) => (
-                            <SelectItem key={type.id} value={type.id}>
-                              {type.name} {type.count ? `(${type.count})` : ""}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Controller
+                      control={control}
+                      name={`items.${index}.yarnTypeId` as const}
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select yarn type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {yarnTypes?.map((type) => (
+                              <SelectItem key={type.id} value={type.id}>
+                                {type.name} {type.count ? `(${type.count})` : ""}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                     </div>
 
                     <div className="space-y-1.5">
