@@ -22,3 +22,24 @@
 	
 2026-07-19 18:49:53.586 IST [17264] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
 	
+2026-07-19 19:12:51.562 IST [27476] LOG:  starting PostgreSQL 16.14, compiled by Visual C++ build 1944, 64-bit
+2026-07-19 19:12:51.568 IST [27476] LOG:  could not bind IPv6 address "::1": Permission denied
+2026-07-19 19:12:51.569 IST [27476] LOG:  could not bind IPv4 address "127.0.0.1": Permission denied
+2026-07-19 19:12:51.569 IST [27476] WARNING:  could not create listen socket for "localhost"
+2026-07-19 19:12:51.569 IST [27476] FATAL:  could not create any TCP/IP sockets
+2026-07-19 19:12:51.573 IST [27476] LOG:  database system is shut down
+2026-07-19 19:14:35.358 IST [5648] LOG:  starting PostgreSQL 16.14, compiled by Visual C++ build 1944, 64-bit
+2026-07-19 19:14:35.363 IST [5648] LOG:  listening on IPv6 address "::1", port 5445
+2026-07-19 19:14:35.363 IST [5648] LOG:  listening on IPv4 address "127.0.0.1", port 5445
+2026-07-19 19:14:35.433 IST [11728] LOG:  database system was interrupted; last known up at 2026-07-19 18:48:32 IST
+2026-07-19 19:14:41.165 IST [11728] LOG:  could not open file "./local-5440.log": sharing violation
+2026-07-19 19:14:41.165 IST [11728] DETAIL:  Continuing to retry for 30 seconds.
+2026-07-19 19:14:41.165 IST [11728] HINT:  You might have antivirus, backup, or similar software interfering with the database system.
+2026-07-19 19:15:08.052 IST [11728] LOG:  syncing data directory (fsync), elapsed time: 32.61 s, current path: ./logfile
+2026-07-19 19:15:08.056 IST [11728] LOG:  database system was not properly shut down; automatic recovery in progress
+2026-07-19 19:15:08.064 IST [11728] LOG:  redo starts at 0/24BF478
+2026-07-19 19:15:08.064 IST [11728] LOG:  invalid record length at 0/24BF560: expected at least 24, got 0
+2026-07-19 19:15:08.064 IST [11728] LOG:  redo done at 0/24BF528 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+2026-07-19 19:15:08.082 IST [7804] LOG:  checkpoint starting: end-of-recovery immediate wait
+2026-07-19 19:15:08.117 IST [7804] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=0.004 s, total=0.050 s; sync files=2, longest=0.002 s, average=0.002 s; distance=0 kB, estimate=0 kB; lsn=0/24BF560, redo lsn=0/24BF560
+2026-07-19 19:15:08.151 IST [5648] LOG:  database system is ready to accept connections

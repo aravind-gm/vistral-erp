@@ -1,1 +1,1 @@
-C:/Program Files/PostgreSQL/16/bin/postgres.exe "-D" "c:/Users/aravind/Downloads/erp fn/vistral-erp/postgres-data" "-p" "5440" "-h" "127.0.0.1"
+C:/Program Files/PostgreSQL/16/bin/postgres.exe "-D" "c:/Users/aravind/Downloads/erp fn/vistral-erp/postgres-data" "-p" "5445"
