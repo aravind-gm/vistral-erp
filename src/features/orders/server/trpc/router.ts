@@ -204,44 +204,73 @@ export const ordersRouter = createTRPCRouter({
       remarks: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const costing = await prisma.orderCosting.upsert({
+      const order = await prisma.order.findUnique({
+        where: { id: input.orderId },
+        select: { quantity: true },
+      });
+      const orderQty = order?.quantity ?? 1;
+
+      const existingCosting = await prisma.orderCosting.findUnique({
+        where: { orderId: input.orderId },
+      });
+
+      const yarnCost = input.yarnCost ?? (existingCosting ? Number(existingCosting.yarnCost) : 0);
+      const knittingCost = input.knittingCost ?? (existingCosting ? Number(existingCosting.knittingCost) : 0);
+      const dyeingCost = input.dyeingCost ?? (existingCosting ? Number(existingCosting.dyeingCost) : 0);
+      const printingCost = input.printingCost ?? (existingCosting ? Number(existingCosting.printingCost) : 0);
+      const compactingCost = input.compactingCost ?? (existingCosting ? Number(existingCosting.compactingCost) : 0);
+      const cuttingCost = input.cuttingCost ?? (existingCosting ? Number(existingCosting.cuttingCost) : 0);
+      const stitchingCost = input.stitchingCost ?? (existingCosting ? Number(existingCosting.stitchingCost) : 0);
+      const packingCost = input.packingCost ?? (existingCosting ? Number(existingCosting.packingCost) : 0);
+
+      const overheadPercent = input.overheadPercent ?? (existingCosting ? Number(existingCosting.overheadPercent) : 10);
+      const profitPercent = input.profitPercent ?? (existingCosting ? Number(existingCosting.profitPercent) : 15);
+
+      const totalCostPerPc = yarnCost + knittingCost + dyeingCost + printingCost + compactingCost + cuttingCost + stitchingCost + packingCost;
+      const overheadAmount = totalCostPerPc * (overheadPercent / 100);
+      const profitAmount = totalCostPerPc * (profitPercent / 100);
+      const sellingPricePerPc = totalCostPerPc + overheadAmount + profitAmount;
+      const totalOrderValue = sellingPricePerPc * orderQty;
+
+      return prisma.orderCosting.upsert({
         where: { orderId: input.orderId },
         create: {
           orderId: input.orderId,
-          yarnCost: input.yarnCost ?? 0,
-          knittingCost: input.knittingCost ?? 0,
-          dyeingCost: input.dyeingCost ?? 0,
-          printingCost: input.printingCost ?? 0,
-          compactingCost: input.compactingCost ?? 0,
-          cuttingCost: input.cuttingCost ?? 0,
-          stitchingCost: input.stitchingCost ?? 0,
-          packingCost: input.packingCost ?? 0,
-          overheadPercent: input.overheadPercent ?? 10,
-          profitPercent: input.profitPercent ?? 15,
-          totalCostPerPc: 0,
-          sellingPricePerPc: 0,
-          totalOrderValue: 0,
+          yarnCost,
+          knittingCost,
+          dyeingCost,
+          printingCost,
+          compactingCost,
+          cuttingCost,
+          stitchingCost,
+          packingCost,
+          overheadPercent,
+          profitPercent,
+          totalCostPerPc,
+          sellingPricePerPc,
+          totalOrderValue,
           remarks: input.remarks,
           createdBy: ctx.session.user.id,
           updatedBy: ctx.session.user.id,
         },
         update: {
-          yarnCost: input.yarnCost ?? undefined,
-          knittingCost: input.knittingCost ?? undefined,
-          dyeingCost: input.dyeingCost ?? undefined,
-          printingCost: input.printingCost ?? undefined,
-          compactingCost: input.compactingCost ?? undefined,
-          cuttingCost: input.cuttingCost ?? undefined,
-          stitchingCost: input.stitchingCost ?? undefined,
-          packingCost: input.packingCost ?? undefined,
-          overheadPercent: input.overheadPercent ?? undefined,
-          profitPercent: input.profitPercent ?? undefined,
+          yarnCost,
+          knittingCost,
+          dyeingCost,
+          printingCost,
+          compactingCost,
+          cuttingCost,
+          stitchingCost,
+          packingCost,
+          overheadPercent,
+          profitPercent,
+          totalCostPerPc,
+          sellingPricePerPc,
+          totalOrderValue,
           remarks: input.remarks ?? undefined,
           updatedBy: ctx.session.user.id,
         },
       });
-
-      return costing;
     }),
 
   delete: protectedProcedure
