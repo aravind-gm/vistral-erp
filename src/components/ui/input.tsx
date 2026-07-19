@@ -11,7 +11,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, startIcon, endIcon, ...props }, ref) => {
     if (startIcon || endIcon) {
       return (
-        <div className="relative flex items-center">
+        <div suppressHydrationWarning className="relative flex items-center">
           {startIcon && (
             <div className="pointer-events-none absolute left-3 flex items-center text-[#6B7280]">
               {startIcon}

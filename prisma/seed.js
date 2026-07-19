@@ -13,7 +13,7 @@ const prisma = new PrismaClient({
 
 async function main() {
   const { hashPassword } = await import("better-auth/crypto");
-  const adminPassword = await hashPassword("Admin@1234");
+  const adminPassword = await hashPassword("Admin@123");
 
   await prisma.company.upsert({
     where: { gstin: "33AAAAA0000A1Z5" },
@@ -67,7 +67,7 @@ async function main() {
         password: adminPassword,
       },
     });
-  } else if (!existingAccount.password) {
+  } else {
     await prisma.account.update({
       where: { id: existingAccount.id },
       data: { password: adminPassword },
