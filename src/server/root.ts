@@ -8,6 +8,7 @@ import { productionRouter } from "@/features/production/server/trpc/router";
 import { financeRouter } from "@/features/finance/server/trpc/router";
 import { usersRouter } from "@/features/users/server/trpc/router";
 import { settingsRouter } from "@/features/settings/server/trpc/router";
+import { purchaseRouter } from "@/features/purchase/server/trpc/router";
 
 export const appRouter = createTRPCRouter({
   dashboard: dashboardRouter,
@@ -19,6 +20,7 @@ export const appRouter = createTRPCRouter({
   finance: financeRouter,
   users: usersRouter,
   settings: settingsRouter,
+  purchase: purchaseRouter,
 });
 
 export type AppRouter = typeof appRouter;
