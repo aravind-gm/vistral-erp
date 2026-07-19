@@ -82,6 +82,7 @@ export const ordersRouter = createTRPCRouter({
           deliveryDate: true,
           createdAt: true,
           customer: { select: { name: true, code: true } },
+          orderCosting: { select: { id: true } },
         },
       }),
       prisma.order.count({ where }),
@@ -141,7 +142,7 @@ export const ordersRouter = createTRPCRouter({
       const year = new Date().getFullYear().toString().slice(-2);
       const orderNo = `ORD-${year}-${String(count + 1).padStart(5, "0")}`;
 
-      return prisma.order.create({
+      const order = await prisma.order.create({
         data: {
           ...orderData,
           orderNo,
@@ -157,6 +158,16 @@ export const ordersRouter = createTRPCRouter({
         },
         include: { orderDetails: true },
       });
+
+      await prisma.orderCosting.create({
+        data: {
+          orderId: order.id,
+          createdBy: ctx.session.user.id,
+          updatedBy: ctx.session.user.id,
+        },
+      });
+
+      return order;
     }),
 
   updateStatus: protectedProcedure
