@@ -85,10 +85,38 @@ export default function NewInvoicePage() {
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
   const formValues = watch();
 
+  const selectedOrderId = watch("orderId");
+  const { data: selectedOrder } = api.orders.byId.useQuery(
+    { id: selectedOrderId ?? "" },
+    { enabled: Boolean(selectedOrderId) }
+  );
+
+  useEffect(() => {
+    if (selectedOrder) {
+      setValue("customerId", selectedOrder.customerId);
+      if (selectedOrder.orderDetails && selectedOrder.orderDetails.length > 0) {
+        const items = selectedOrder.orderDetails.map((detail: any) => ({
+          description: `${selectedOrder.styleName || "Garments"} - ${detail.color} ${detail.size || ""}`,
+          hsn: "6109",
+          quantity: Number(detail.quantity),
+          unit: "PCS",
+          unitPrice: Number(detail.unitPrice || 0),
+          amount: Number(detail.quantity) * Number(detail.unitPrice || 0),
+          gstPercent: 5,
+          cgstAmount: 0,
+          sgstAmount: 0,
+          igstAmount: 0,
+          totalAmount: 0,
+        }));
+        setValue("items", items);
+      }
+    }
+  }, [selectedOrder, setValue]);
+
   const createInvoice = api.finance.createInvoice.useMutation({
     onSuccess: () => {
       toast.success("Invoice created");
-      router.push("/finance/invoices");
+      router.push("/finance");
     },
     onError: (error) => {
       toast.error(error.message);
@@ -96,17 +124,27 @@ export default function NewInvoicePage() {
   });
 
   const calculateTotals = () => {
-    const subtotal = formValues.items?.reduce((sum, item) => sum + Number(item.amount || 0), 0) ?? 0;
+    const subtotal = formValues.items?.reduce((sum, item) => {
+      const quantity = Number(item.quantity || 0);
+      const unitPrice = Number(item.unitPrice || 0);
+      return sum + (quantity * unitPrice);
+    }, 0) ?? 0;
+    
     const discount = Number(formValues.discountAmount || 0);
     const taxableAmount = Math.max(0, subtotal - discount);
+    
     const totalTax = formValues.items?.reduce((sum, item) => {
-      const itemAmount = Number(item.amount || 0);
+      const quantity = Number(item.quantity || 0);
+      const unitPrice = Number(item.unitPrice || 0);
+      const itemAmount = quantity * unitPrice;
       const gstPercent = Number(item.gstPercent || 0);
       return sum + (itemAmount * gstPercent) / 100;
     }, 0) ?? 0;
+    
     const taxBreakdown = formValues.gstType === "IGST"
       ? { cgst: 0, sgst: 0, igst: totalTax }
       : { cgst: totalTax / 2, sgst: totalTax / 2, igst: 0 };
+      
     return {
       subtotal,
       discount,
