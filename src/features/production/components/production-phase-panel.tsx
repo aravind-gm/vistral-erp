@@ -610,7 +610,7 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {rows.map((batch) => {
+                  {rows.map((batch: any) => {
                     const status = config.getStatus(batch);
                     return (
                       <tr key={batch.id} className="hover:bg-gray-50">
