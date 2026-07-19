@@ -264,18 +264,83 @@ export default function FinancePage() {
 
         <TabsContent value="payments" className="mt-4">
           <Card>
-            <CardContent className="p-12 text-center text-gray-400">
-              <IndianRupee className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-              <p className="font-medium">Payment register coming soon</p>
-              <p className="text-sm mt-1">Record and track all customer payments here</p>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Payment Register</CardTitle>
+                <p className="text-sm text-gray-500 mt-1">Record and view all incoming customer payments.</p>
+              </div>
+              <Button onClick={() => setIsRecordPaymentOpen(true)} size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Record Payment
+              </Button>
+            </CardHeader>
+            <CardContent className="p-0">
+              {payments.isLoading ? (
+                <div className="p-6 space-y-3">
+                  {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+                </div>
+              ) : !payments.data?.data.length ? (
+                <div className="p-12 text-center text-gray-400">
+                  <CreditCard className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <p className="font-medium">No payments recorded yet</p>
+                  <p className="text-sm mt-1">Click "Record Payment" to log an invoice payment</p>
+                </div>
+              ) : (
+                <>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-100 bg-gray-50">
+                        <th className="text-left px-6 py-3 font-medium text-gray-600">Date</th>
+                        <th className="text-left px-6 py-3 font-medium text-gray-600">Invoice #</th>
+                        <th className="text-left px-6 py-3 font-medium text-gray-600">Customer</th>
+                        <th className="text-left px-6 py-3 font-medium text-gray-600">Method</th>
+                        <th className="text-left px-6 py-3 font-medium text-gray-600">Reference No</th>
+                        <th className="text-right px-6 py-3 font-medium text-gray-600">Amount Paid</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50 font-mono">
+                      {payments.data.data.map((pay: any) => (
+                        <tr key={pay.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 text-gray-600 font-sans">{formatDate(pay.paymentDate)}</td>
+                          <td className="px-6 py-4 font-semibold text-gray-900">{pay.invoice.invoiceNo}</td>
+                          <td className="px-6 py-4 text-gray-600 font-sans">{pay.invoice.customer?.name ?? "-"}</td>
+                          <td className="px-6 py-4 text-gray-600 font-sans">
+                            <Badge variant="outline">{pay.paymentMode}</Badge>
+                          </td>
+                          <td className="px-6 py-4 text-gray-500">{pay.referenceNo || "-"}</td>
+                          <td className="px-6 py-4 text-right font-bold text-green-600">{formatCurrency(Number(pay.amount))}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {payments.data.meta.total > 20 && (
+                    <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 font-sans">
+                      <p className="text-sm text-gray-500">
+                        Showing {(paymentsPage - 1) * 20 + 1}–{Math.min(paymentsPage * 20, payments.data.meta.total)} of {payments.data.meta.total}
+                      </p>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" disabled={paymentsPage === 1} onClick={() => setPaymentsPage(p => p - 1)}>Previous</Button>
+                        <Button variant="outline" size="sm" disabled={paymentsPage * 20 >= payments.data.meta.total} onClick={() => setPaymentsPage(p => p + 1)}>Next</Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="gst" className="mt-4">
           <Card>
-            <CardHeader>
-              <CardTitle>GST Report — {new Date().toLocaleString("default", { month: "long", year: "numeric" })}</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>GST Report — {new Date().toLocaleString("default", { month: "long", year: "numeric" })}</CardTitle>
+                <p className="text-sm text-gray-500 mt-1">Review taxable sales and CGST/SGST/IGST breakdown.</p>
+              </div>
+              <Button onClick={handleExportGSTR1} disabled={!gstReport.data?.invoices?.length} size="sm" variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Export GSTR-1 Excel
+              </Button>
             </CardHeader>
             <CardContent>
               {gstReport.isLoading ? (
@@ -306,6 +371,126 @@ export default function FinancePage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={isRecordPaymentOpen} onOpenChange={setIsRecordPaymentOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>Record Payment</DialogTitle>
+            <DialogDescription>
+              Log a customer payment against an unpaid or partially paid sales invoice.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-1.5">
+              <Label>Invoice *</Label>
+              <Select
+                value={paymentForm.invoiceId}
+                onValueChange={(value) => {
+                  const selectedInv = invoices.data?.data.find((inv) => inv.id === value);
+                  setPaymentForm((prev) => ({
+                    ...prev,
+                    invoiceId: value,
+                    amount: selectedInv ? String(Number(selectedInv.balanceAmount)) : "",
+                  }));
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select outstanding invoice" />
+                </SelectTrigger>
+                <SelectContent>
+                  {invoices.data?.data
+                    .filter((inv) => inv.paymentStatus !== "PAID" && inv.status !== "CANCELLED")
+                    .map((inv) => (
+                      <SelectItem key={inv.id} value={inv.id}>
+                        {inv.invoiceNo} — {inv.customer?.name} (Bal: ₹{Number(inv.balanceAmount).toFixed(2)})
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Amount Paid (₹) *</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={paymentForm.amount}
+                onChange={(e) => setPaymentForm((prev) => ({ ...prev, amount: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Payment Date *</Label>
+              <Input
+                type="date"
+                value={paymentForm.paymentDate}
+                onChange={(e) => setPaymentForm((prev) => ({ ...prev, paymentDate: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Payment Mode *</Label>
+              <Select
+                value={paymentForm.paymentMode}
+                onValueChange={(value) =>
+                  setPaymentForm((prev) => ({
+                    ...prev,
+                    paymentMode: value as any,
+                  }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="UPI">UPI / QR Code</SelectItem>
+                  <SelectItem value="NEFT">NEFT Transfer</SelectItem>
+                  <SelectItem value="RTGS">RTGS Transfer</SelectItem>
+                  <SelectItem value="CHEQUE">Cheque</SelectItem>
+                  <SelectItem value="CASH">Cash</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Reference No / Txn ID</Label>
+                <Input
+                  placeholder="e.g. UTR12345..."
+                  value={paymentForm.referenceNo}
+                  onChange={(e) => setPaymentForm((prev) => ({ ...prev, referenceNo: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Bank Name</Label>
+                <Input
+                  placeholder="e.g. HDFC Bank"
+                  value={paymentForm.bankName}
+                  onChange={(e) => setPaymentForm((prev) => ({ ...prev, bankName: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Remarks</Label>
+              <Textarea
+                placeholder="Additional transaction details..."
+                rows={2}
+                value={paymentForm.remarks}
+                onChange={(e) => setPaymentForm((prev) => ({ ...prev, remarks: e.target.value }))}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setIsRecordPaymentOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSavePayment} loading={recordPaymentMutation.isPending}>
+              Save Payment
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
