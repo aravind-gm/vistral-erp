@@ -177,4 +177,32 @@ export const financeRouter = createTRPCRouter({
         summary: { totalCGST, totalSGST, totalIGST, totalTaxable, totalTax: totalCGST + totalSGST + totalIGST },
       };
     }),
+
+  listPayments: protectedProcedure
+    .input(z.object({
+      page: z.number().min(1).default(1),
+      limit: z.number().default(20),
+    }))
+    .query(async ({ input }) => {
+      const { page, limit } = input;
+      const skip = (page - 1) * limit;
+
+      const [data, total] = await Promise.all([
+        prisma.payment.findMany({
+          skip,
+          take: limit,
+          orderBy: { paymentDate: "desc" },
+          include: {
+            invoice: {
+              include: {
+                customer: { select: { name: true } },
+              },
+            },
+          },
+        }),
+        prisma.payment.count(),
+      ]);
+
+      return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    }),
 });
