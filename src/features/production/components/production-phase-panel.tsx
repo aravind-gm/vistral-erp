@@ -205,12 +205,284 @@ const formatDetailValue = (value: unknown) => {
 export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig }) {
   const router = useRouter();
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [checkedItems, setCheckedItems] = useState<boolean[]>([]);
 
   const batches = api.production.listBatches.useQuery({ page: 1, limit: 100 });
   const selectedBatchQuery = api.production.getBatchById.useQuery(
     { id: selectedBatchId ?? "" },
     { enabled: Boolean(selectedBatchId) }
   );
+
+  const updateKnitting = api.production.updateKnitting.useMutation();
+  const updateGreyFabric = api.production.updateGreyFabric.useMutation();
+  const updateDyeing = api.production.updateDyeing.useMutation();
+  const updatePrinting = api.production.updatePrinting.useMutation();
+  const updateCompacting = api.production.updateCompacting.useMutation();
+  const updateChecking = api.production.updateChecking.useMutation();
+  const updateCutting = api.production.updateCutting.useMutation();
+  const updateStitching = api.production.updateStitching.useMutation();
+  const updatePacking = api.production.updatePacking.useMutation();
+  const updateDispatch = api.production.updateDispatch.useMutation();
+
+  const getFieldsForStage = (title: string) => {
+    switch (title) {
+      case "Knitting":
+        return [
+          { name: "machineNo", label: "Machine No", type: "text" },
+          { name: "gaugeNo", label: "Gauge No", type: "text" },
+          { name: "diameter", label: "Diameter", type: "number" },
+          { name: "gsm", label: "GSM", type: "number" },
+          { name: "yarnIssued", label: "Yarn Issued (KG)", type: "number" },
+          { name: "fabricProduced", label: "Fabric Produced (KG)", type: "number" },
+          { name: "wastage", label: "Wastage (KG)", type: "number" },
+          { name: "operatorName", label: "Operator Name", type: "text" },
+          { name: "remarks", label: "Remarks", type: "textarea" },
+        ];
+      case "Grey Fabric":
+        return [
+          { name: "rollCount", label: "Roll Count", type: "number" },
+          { name: "totalWeight", label: "Total Weight (KG)", type: "number" },
+          { name: "gsm", label: "GSM", type: "number" },
+          { name: "width", label: "Width (inches)", type: "number" },
+          { name: "inspectedBy", label: "Inspected By", type: "text" },
+          { name: "remarks", label: "Remarks", type: "textarea" },
+        ];
+      case "Dyeing":
+        return [
+          { name: "color", label: "Color", type: "text" },
+          { name: "shade", label: "Shade", type: "text" },
+          { name: "recipe", label: "Recipe", type: "text" },
+          { name: "isInHouse", label: "In-House Routing", type: "boolean" },
+          { name: "subcontractorId", label: "Subcontractor ID", type: "text" },
+          { name: "fabricIn", label: "Fabric In (KG)", type: "number" },
+          { name: "fabricOut", label: "Fabric Out (KG)", type: "number" },
+          { name: "costPerKg", label: "Cost Per KG", type: "number" },
+          { name: "remarks", label: "Remarks", type: "textarea" },
+        ];
+      case "Printing":
+        return [
+          { name: "printType", label: "Print Type", type: "text" },
+          { name: "designRef", label: "Design Ref", type: "text" },
+          { name: "isInHouse", label: "In-House Routing", type: "boolean" },
+          { name: "subcontractorId", label: "Subcontractor ID", type: "text" },
+          { name: "fabricIn", label: "Fabric In (KG)", type: "number" },
+          { name: "fabricOut", label: "Fabric Out (KG)", type: "number" },
+          { name: "costPerPc", label: "Cost Per PC", type: "number" },
+          { name: "remarks", label: "Remarks", type: "textarea" },
+        ];
+      case "Compacting":
+        return [
+          { name: "fabricIn", label: "Fabric In (KG)", type: "number" },
+          { name: "fabricOut", label: "Fabric Out (KG)", type: "number" },
+          { name: "shrinkage", label: "Shrinkage %", type: "number" },
+          { name: "remarks", label: "Remarks", type: "textarea" },
+        ];
+      case "Checking / QC":
+        return [
+          { name: "checkedQty", label: "Checked Qty", type: "number" },
+          { name: "passedQty", label: "Passed Qty", type: "number" },
+          { name: "rejectedQty", label: "Rejected Qty", type: "number" },
+          { name: "inspectorName", label: "Inspector Name", type: "text" },
+          { name: "defectDetails", label: "Defect Details", type: "textarea" },
+          { name: "remarks", label: "Remarks", type: "textarea" },
+        ];
+      case "Cutting":
+        return [
+          { name: "pliesCount", label: "Plies Count", type: "number" },
+          { name: "fabricUsed", label: "Fabric Used (KG)", type: "number" },
+          { name: "cutPieces", label: "Cut Pieces Qty", type: "number" },
+          { name: "wastage", label: "Wastage (KG)", type: "number" },
+          { name: "markerEfficiency", label: "Marker Efficiency %", type: "number" },
+          { name: "remarks", label: "Remarks", type: "textarea" },
+        ];
+      case "Stitching":
+        return [
+          { name: "receivedQty", label: "Received Qty", type: "number" },
+          { name: "stitchedQty", label: "Stitched Qty", type: "number" },
+          { name: "rejectedQty", label: "Rejected Qty", type: "number" },
+          { name: "lineNo", label: "Line No", type: "text" },
+          { name: "supervisorName", label: "Supervisor Name", type: "text" },
+          { name: "costPerPc", label: "Cost Per PC", type: "number" },
+          { name: "remarks", label: "Remarks", type: "textarea" },
+        ];
+      case "Packing":
+        return [
+          { name: "packedQty", label: "Packed Qty", type: "number" },
+          { name: "cartons", label: "Cartons Count", type: "number" },
+          { name: "grossWeight", label: "Gross Weight (KG)", type: "number" },
+          { name: "netWeight", label: "Net Weight (KG)", type: "number" },
+          { name: "packingType", label: "Packing Type", type: "text" },
+          { name: "remarks", label: "Remarks", type: "textarea" },
+        ];
+      case "Dispatch":
+        return [
+          { name: "vehicleNo", label: "Vehicle No", type: "text" },
+          { name: "lrNo", label: "LR No (Lorry Receipt)", type: "text" },
+          { name: "courier", label: "Courier/Transporter Name", type: "text" },
+          { name: "trackingNo", label: "Tracking No", type: "text" },
+          { name: "cartons", label: "Cartons Count", type: "number" },
+          { name: "grossWeight", label: "Gross Weight (KG)", type: "number" },
+          { name: "netWeight", label: "Net Weight (KG)", type: "number" },
+          { name: "deliveryAddress", label: "Delivery Address", type: "textarea" },
+          { name: "remarks", label: "Remarks", type: "textarea" },
+          { name: "dispatchDate", label: "Dispatch Date", type: "date" },
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const getStageRelation = (title: string, batch: any) => {
+    switch (title) {
+      case "Knitting":
+        return batch.knitting;
+      case "Grey Fabric":
+        return batch.greyFabric;
+      case "Dyeing":
+        return batch.dyeingProcess;
+      case "Printing":
+        return batch.printingProcess;
+      case "Compacting":
+        return batch.compacting;
+      case "Checking / QC":
+        return batch.checking;
+      case "Cutting":
+        return batch.cutting;
+      case "Stitching":
+        return batch.stitching;
+      case "Packing":
+        return batch.packing;
+      case "Dispatch":
+        return batch.dispatch;
+      default:
+        return null;
+    }
+  };
+
+  const startEditing = () => {
+    if (!selectedBatch) return;
+    const relation = getStageRelation(config.title, selectedBatch);
+    const fields = getFieldsForStage(config.title);
+    
+    const initialData: Record<string, any> = {};
+    
+    if (config.title === "Grey Fabric") {
+      initialData.inspectionStatus = relation?.inspectionStatus ?? "PENDING";
+    } else if (config.title !== "Dispatch") {
+      initialData.status = relation?.status ?? "PENDING";
+    }
+    
+    fields.forEach((field) => {
+      let val = relation?.[field.name];
+      if (val !== undefined && val !== null) {
+        if (field.type === "number") {
+          initialData[field.name] = Number(val);
+        } else if (field.type === "date") {
+          try {
+            initialData[field.name] = val instanceof Date ? val.toISOString().split("T")[0] : new Date(val).toISOString().split("T")[0];
+          } catch {
+            initialData[field.name] = "";
+          }
+        } else {
+          initialData[field.name] = val;
+        }
+      } else {
+        if (field.type === "boolean") {
+          initialData[field.name] = false;
+        } else if (field.type === "number") {
+          initialData[field.name] = "";
+        } else {
+          initialData[field.name] = "";
+        }
+      }
+    });
+    
+    setFormData(initialData);
+    setIsEditing(true);
+  };
+
+  const handleSave = async () => {
+    if (!selectedBatch) return;
+    
+    const payload: Record<string, any> = {
+      batchId: selectedBatch.id,
+    };
+    
+    const fields = getFieldsForStage(config.title);
+    
+    if (config.title === "Grey Fabric") {
+      payload.inspectionStatus = formData.inspectionStatus ?? "PENDING";
+    } else if (config.title !== "Dispatch") {
+      payload.status = formData.status ?? "PENDING";
+    }
+    
+    fields.forEach((field) => {
+      const val = formData[field.name];
+      if (field.type === "number") {
+        payload[field.name] = val === "" || val === undefined || val === null ? undefined : Number(val);
+      } else if (field.type === "date") {
+        payload[field.name] = val ? new Date(val) : undefined;
+      } else if (field.type === "boolean") {
+        payload[field.name] = Boolean(val);
+      } else {
+        payload[field.name] = val === "" ? undefined : val;
+      }
+    });
+
+    try {
+      switch (config.title) {
+        case "Knitting":
+          await updateKnitting.mutateAsync(payload as any);
+          break;
+        case "Grey Fabric":
+          await updateGreyFabric.mutateAsync(payload as any);
+          break;
+        case "Dyeing":
+          await updateDyeing.mutateAsync(payload as any);
+          break;
+        case "Printing":
+          await updatePrinting.mutateAsync(payload as any);
+          break;
+        case "Compacting":
+          await updateCompacting.mutateAsync(payload as any);
+          break;
+        case "Checking / QC":
+          await updateChecking.mutateAsync(payload as any);
+          break;
+        case "Cutting":
+          await updateCutting.mutateAsync(payload as any);
+          break;
+        case "Stitching":
+          await updateStitching.mutateAsync(payload as any);
+          break;
+        case "Packing":
+          await updatePacking.mutateAsync(payload as any);
+          break;
+        case "Dispatch":
+          await updateDispatch.mutateAsync(payload as any);
+          break;
+      }
+      
+      toast.success(`${config.title} details updated successfully`);
+      setIsEditing(false);
+      batches.refetch();
+      selectedBatchQuery.refetch();
+    } catch (err: any) {
+      toast.error(err.message || `Failed to update ${config.title} details`);
+    }
+  };
+
+  const selectedBatch = selectedBatchQuery.data;
+
+  useEffect(() => {
+    if (selectedBatch) {
+      const status = config.getStatus(selectedBatch);
+      const isCompleted = ["COMPLETED", "PASSED", "FAILED", "DISPATCHED"].includes(status);
+      setCheckedItems(config.workflowSteps.map(() => isCompleted));
+    }
+  }, [selectedBatch?.id, config]);
 
   const rows = batches.data?.data ?? [];
   const summary = useMemo(() => {
@@ -376,7 +648,7 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
         </CardContent>
       </Card>
 
-      <Dialog open={Boolean(selectedBatchId)} onOpenChange={(open) => !open && setSelectedBatchId(null)}>
+      <Dialog open={Boolean(selectedBatchId)} onOpenChange={(open) => { if (!open) { setSelectedBatchId(null); setIsEditing(false); } }}>
         <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedBatch?.batchNo ?? "Batch workspace"}</DialogTitle>
@@ -437,35 +709,151 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {config.workflowSteps.map((step, index) => (
-                    <div key={step} className="flex gap-3 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3">
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#111827] text-xs font-semibold text-white">
-                        {index + 1}
-                      </div>
+                    <label key={step} className="flex gap-3 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 cursor-pointer items-start hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={checkedItems[index] ?? false}
+                        onChange={(e) => {
+                          const updated = [...checkedItems];
+                          updated[index] = e.target.checked;
+                          setCheckedItems(updated);
+                        }}
+                        className="mt-1 h-4 w-4 rounded border-gray-300 text-[#111827] focus:ring-[#111827]"
+                      />
                       <div>
-                        <p className="text-sm font-medium text-[#111827]">{step}</p>
+                        <p className={`text-sm font-medium text-[#111827] ${checkedItems[index] ? 'line-through text-gray-400' : ''}`}>{step}</p>
                         <p className="text-xs text-[#6B7280]">Track this before handing over the batch.</p>
                       </div>
-                    </div>
+                    </label>
                   ))}
                 </CardContent>
               </Card>
 
               <Card className="lg:col-span-2">
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                   <CardTitle>{config.title} process details</CardTitle>
+                  {!isEditing ? (
+                    <Button variant="outline" size="sm" onClick={startEditing}>
+                      Edit details
+                    </Button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
+                        Cancel
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        onClick={handleSave} 
+                        loading={
+                          updateKnitting.isPending ||
+                          updateGreyFabric.isPending ||
+                          updateDyeing.isPending ||
+                          updatePrinting.isPending ||
+                          updateCompacting.isPending ||
+                          updateChecking.isPending ||
+                          updateCutting.isPending ||
+                          updateStitching.isPending ||
+                          updatePacking.isPending ||
+                          updateDispatch.isPending
+                        }
+                      >
+                        Save changes
+                      </Button>
+                    </div>
+                  )}
                 </CardHeader>
-                <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {config.details.map((detail) => {
-                    const value = detail.value(selectedBatch);
-                    return (
-                      <div key={detail.label} className="rounded-xl border border-[#E5E7EB] bg-[#FAFAFA] p-4">
-                        <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">{detail.label}</p>
-                        <div className="mt-2 text-sm font-medium text-[#111827]">
-                          {typeof value === "string" ? formatDetailValue(value) : value}
+                <CardContent>
+                  {!isEditing ? (
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      {config.details.map((detail) => {
+                        const value = detail.value(selectedBatch);
+                        return (
+                          <div key={detail.label} className="rounded-xl border border-[#E5E7EB] bg-[#FAFAFA] p-4">
+                            <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">{detail.label}</p>
+                            <div className="mt-2 text-sm font-medium text-[#111827]">
+                              {typeof value === "string" ? formatDetailValue(value) : value}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {config.title !== "Dispatch" && (
+                        <div className="grid gap-2">
+                          <Label htmlFor="stage-status-select">
+                            {config.title === "Grey Fabric" ? "Inspection Status" : "Stage Status"}
+                          </Label>
+                          <Select
+                            value={formData[config.title === "Grey Fabric" ? "inspectionStatus" : "status"] ?? "PENDING"}
+                            onValueChange={(val) => {
+                              setFormData({
+                                ...formData,
+                                [config.title === "Grey Fabric" ? "inspectionStatus" : "status"]: val
+                              });
+                            }}
+                          >
+                            <SelectTrigger id="stage-status-select">
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {config.title === "Grey Fabric" ? (
+                                <>
+                                  <SelectItem value="PENDING">PENDING</SelectItem>
+                                  <SelectItem value="PASSED">PASSED</SelectItem>
+                                  <SelectItem value="FAILED">FAILED</SelectItem>
+                                </>
+                              ) : (
+                                <>
+                                  <SelectItem value="PENDING">PENDING</SelectItem>
+                                  <SelectItem value="IN_PROGRESS">IN PROGRESS</SelectItem>
+                                  <SelectItem value="COMPLETED">COMPLETED</SelectItem>
+                                  <SelectItem value="ON_HOLD">ON HOLD</SelectItem>
+                                </>
+                              )}
+                            </SelectContent>
+                          </Select>
                         </div>
+                      )}
+                      
+                      <div className="grid gap-4 md:grid-cols-2">
+                        {getFieldsForStage(config.title).map((field) => (
+                          <div key={field.name} className={`grid gap-2 ${field.type === "textarea" ? "md:col-span-2" : ""}`}>
+                            <Label htmlFor={`field-${field.name}`}>{field.label}</Label>
+                            {field.type === "textarea" ? (
+                              <Textarea
+                                id={`field-${field.name}`}
+                                value={formData[field.name] ?? ""}
+                                onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                                placeholder={`Enter ${field.label.toLowerCase()}...`}
+                              />
+                            ) : field.type === "boolean" ? (
+                              <Select
+                                value={formData[field.name] ? "true" : "false"}
+                                onValueChange={(val) => setFormData({ ...formData, [field.name]: val === "true" })}
+                              >
+                                <SelectTrigger id={`field-${field.name}`}>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="true">Yes / In-house</SelectItem>
+                                  <SelectItem value="false">No / Subcontract</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <Input
+                                id={`field-${field.name}`}
+                                type={field.type}
+                                value={formData[field.name] ?? ""}
+                                onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                                placeholder={`Enter ${field.label.toLowerCase()}...`}
+                              />
+                            )}
+                          </div>
+                        ))}
                       </div>
-                    );
-                  })}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
