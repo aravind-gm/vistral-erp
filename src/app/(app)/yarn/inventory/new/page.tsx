@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { api } from "@/lib/trpc";
@@ -32,7 +32,7 @@ export default function NewInventoryPage() {
   const { data: suppliers } = api.suppliers.list.useQuery({ page: 1, limit: 100 });
 
   const { register, handleSubmit, formState: { errors } } = useForm<InventoryForm>({
-    resolver: zodResolver(inventorySchema),
+    resolver: zodResolver(inventorySchema) as Resolver<InventoryForm>,
     defaultValues: {
       yarnTypeId: "",
       supplierId: "",

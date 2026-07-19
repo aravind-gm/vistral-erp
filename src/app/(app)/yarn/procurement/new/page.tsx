@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { api } from "@/lib/trpc";
@@ -48,7 +48,7 @@ export default function NewProcurementPage() {
     watch,
     formState: { errors },
   } = useForm<ProcurementForm>({
-    resolver: zodResolver(procurementSchema),
+    resolver: zodResolver(procurementSchema) as Resolver<ProcurementForm>,
     defaultValues: {
       supplierId: "",
       expectedDate: undefined,
