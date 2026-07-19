@@ -6,11 +6,24 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-function createPrismaClient(): PrismaClient {
+const fallbackLocalDatabaseUrl = "postgresql://postgres@127.0.0.1:5440/vistral_erp";
+
+function resolveConnectionString() {
   const connectionString = process.env.DATABASE_URL;
+
   if (!connectionString) {
-    throw new Error("DATABASE_URL environment variable is not set");
+    return fallbackLocalDatabaseUrl;
   }
+
+  if (connectionString.includes("127.0.0.1:5435") || connectionString.includes("127.0.0.1:5433")) {
+    return fallbackLocalDatabaseUrl;
+  }
+
+  return connectionString;
+}
+
+function createPrismaClient(): PrismaClient {
+  const connectionString = resolveConnectionString();
   const pool = new Pool({ connectionString });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({
