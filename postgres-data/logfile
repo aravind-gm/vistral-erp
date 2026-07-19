@@ -25,3 +25,9 @@
 2026-07-14 20:03:06.902 IST [12132] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
 2026-07-14 20:03:06.902 IST [12132] LOG:  terminating any other active server processes
 2026-07-14 20:03:06.918 IST [12132] LOG:  received fast shutdown request
+2026-07-19 18:40:36.677 IST [30396] LOG:  starting PostgreSQL 16.14, compiled by Visual C++ build 1944, 64-bit
+2026-07-19 18:40:36.684 IST [30396] LOG:  could not bind IPv6 address "::1": Permission denied
+2026-07-19 18:40:36.685 IST [30396] LOG:  could not bind IPv4 address "127.0.0.1": Permission denied
+2026-07-19 18:40:36.685 IST [30396] WARNING:  could not create listen socket for "localhost"
+2026-07-19 18:40:36.685 IST [30396] FATAL:  could not create any TCP/IP sockets
+2026-07-19 18:40:36.689 IST [30396] LOG:  database system is shut down
