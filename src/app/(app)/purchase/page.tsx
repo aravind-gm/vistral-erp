@@ -28,16 +28,6 @@ import { toast } from "sonner";
 import { ArrowLeft, Plus, FileText, Calendar, IndianRupee, Trash2, CheckCircle2, ShoppingCart } from "lucide-react";
 import { formatCurrency, formatDate } from "@/features/dashboard/utils/formatters";
 
-type POItemInput = {
-  itemName: string;
-  itemCode: string;
-  description: string;
-  quantity: number;
-  unit: string;
-  unitPrice: number;
-  gstPercent: number;
-};
-
 const PO_STATUS_VARIANT: Record<string, "default" | "warning" | "success" | "destructive"> = {
   DRAFT: "default",
   APPROVED: "warning",
@@ -49,21 +39,10 @@ export default function PurchasePage() {
   const router = useRouter();
   const utils = api.useUtils();
   const [page, setPage] = useState(1);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedPOId, setSelectedPOId] = useState<string | null>(null);
 
   const purchaseOrders = api.purchase.list.useQuery({ page, limit: 20 });
-  const suppliers = api.suppliers.list.useQuery({ page: 1, limit: 100 });
   const selectedPO = api.purchase.byId.useQuery({ id: selectedPOId ?? "" }, { enabled: Boolean(selectedPOId) });
-
-  const createPO = api.purchase.create.useMutation({
-    onSuccess: () => {
-      toast.success("Purchase Order created successfully");
-      setIsCreateOpen(false);
-      void utils.purchase.list.invalidate();
-    },
-    onError: (err) => toast.error(err.message),
-  });
 
   const updateStatus = api.purchase.updateStatus.useMutation({
     onSuccess: () => {
@@ -76,64 +55,6 @@ export default function PurchasePage() {
     onError: (err) => toast.error(err.message),
   });
 
-  // Create Form State
-  const [supplierId, setSupplierId] = useState("");
-  const [expectedDate, setExpectedDate] = useState("");
-  const [remarks, setRemarks] = useState("");
-  const [items, setItems] = useState<POItemInput[]>([
-    { itemName: "", itemCode: "", description: "", quantity: 1, unit: "PCS", unitPrice: 0, gstPercent: 18 },
-  ]);
-
-  const totals = useMemo(() => {
-    const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-    const tax = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice * item.gstPercent / 100), 0);
-    return {
-      subtotal,
-      tax,
-      total: subtotal + tax,
-    };
-  }, [items]);
-
-  const handleAddItem = () => {
-    setItems((prev) => [
-      ...prev,
-      { itemName: "", itemCode: "", description: "", quantity: 1, unit: "PCS", unitPrice: 0, gstPercent: 18 },
-    ]);
-  };
-
-  const handleRemoveItem = (index: number) => {
-    if (items.length === 1) return;
-    setItems((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleUpdateItem = (index: number, field: keyof POItemInput, value: any) => {
-    setItems((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
-    );
-  };
-
-  const handleSubmit = () => {
-    if (!supplierId) {
-      toast.error("Please select a supplier");
-      return;
-    }
-    const invalidItem = items.some((item) => !item.itemName || item.quantity <= 0 || item.unitPrice < 0);
-    if (invalidItem) {
-      toast.error("Please fill in all item names, positive quantities and prices");
-      return;
-    }
-
-    createPO.mutate({
-      supplierId,
-      expectedDate: expectedDate ? new Date(expectedDate) : undefined,
-      remarks,
-      items: items.map((item) => ({
-        ...item,
-        amount: item.quantity * item.unitPrice,
-      })),
-    });
-  };
-
   return (
     <div className="space-y-6 pt-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -145,13 +66,7 @@ export default function PurchasePage() {
           <Button variant="outline" onClick={() => router.push("/suppliers")}>
             <ArrowLeft className="h-4 w-4 mr-2" /> Suppliers
           </Button>
-          <Button onClick={() => {
-            setSupplierId("");
-            setExpectedDate("");
-            setRemarks("");
-            setItems([{ itemName: "", itemCode: "", description: "", quantity: 1, unit: "PCS", unitPrice: 0, gstPercent: 18 }]);
-            setIsCreateOpen(true);
-          }}>
+          <Button onClick={() => router.push("/purchase/new")} className="bg-[#111827] hover:bg-black text-white">
             <Plus className="h-4 w-4 mr-2" /> New Purchase Order
           </Button>
         </div>
@@ -224,119 +139,6 @@ export default function PurchasePage() {
           )}
         </CardContent>
       </Card>
-
-      {/* CREATE PO DIALOG */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>New Purchase Order</DialogTitle>
-            <DialogDescription>
-              Create a new purchase order for materials, fabrics, trim or other accessories.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6 py-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Supplier *</Label>
-                <Select value={supplierId} onValueChange={setSupplierId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Supplier" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {suppliers?.data?.data?.map((supp: any) => (
-                      <SelectItem key={supp.id} value={supp.id}>{supp.name} ({supp.supplierType})</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>Expected Delivery Date</Label>
-                <Input type="date" value={expectedDate} onChange={(e) => setExpectedDate(e.target.value)} />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-sm font-semibold text-gray-900">PO Items</h3>
-                <Button type="button" variant="outline" size="sm" onClick={handleAddItem}>
-                  <Plus className="h-4 w-4 mr-1" /> Add Item
-                </Button>
-              </div>
-
-              {items.map((item, index) => (
-                <div key={index} className="grid gap-3 md:grid-cols-12 items-end border-b border-gray-100 pb-4">
-                  <div className="md:col-span-3 space-y-1.5">
-                    <Label>Item Name *</Label>
-                    <Input value={item.itemName} onChange={(e) => handleUpdateItem(index, "itemName", e.target.value)} placeholder="e.g. Cotton fabric" />
-                  </div>
-                  <div className="md:col-span-2 space-y-1.5">
-                    <Label>Code</Label>
-                    <Input value={item.itemCode} onChange={(e) => handleUpdateItem(index, "itemCode", e.target.value)} placeholder="Part #" />
-                  </div>
-                  <div className="md:col-span-2 space-y-1.5">
-                    <Label>Qty *</Label>
-                    <Input type="number" step="0.01" value={item.quantity} onChange={(e) => handleUpdateItem(index, "quantity", Number(e.target.value))} />
-                  </div>
-                  <div className="md:col-span-1 space-y-1.5">
-                    <Label>Unit</Label>
-                    <Select value={item.unit} onValueChange={(val) => handleUpdateItem(index, "unit", val)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="PCS">PCS</SelectItem>
-                        <SelectItem value="KG">KG</SelectItem>
-                        <SelectItem value="METERS">MTR</SelectItem>
-                        <SelectItem value="ROLLS">ROLLS</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="md:col-span-2 space-y-1.5">
-                    <Label>Price *</Label>
-                    <Input type="number" step="0.01" value={item.unitPrice} onChange={(e) => handleUpdateItem(index, "unitPrice", Number(e.target.value))} />
-                  </div>
-                  <div className="md:col-span-1 space-y-1.5">
-                    <Label>GST %</Label>
-                    <Input type="number" step="0.1" value={item.gstPercent} onChange={(e) => handleUpdateItem(index, "gstPercent", Number(e.target.value))} />
-                  </div>
-                  <div className="md:col-span-1 flex justify-center pb-1">
-                    <Button type="button" variant="ghost" size="icon" disabled={items.length === 1} onClick={() => handleRemoveItem(index)}>
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Remarks / Instructions</Label>
-              <Textarea rows={2} value={remarks} onChange={(e) => setRemarks(e.target.value)} />
-            </div>
-
-            <div className="grid gap-4 rounded-xl border border-gray-100 bg-gray-50 p-4 md:grid-cols-3 text-sm">
-              <div>
-                <p className="text-gray-500">Subtotal</p>
-                <p className="text-lg font-bold font-mono">{formatCurrency(totals.subtotal)}</p>
-              </div>
-              <div>
-                <p className="text-gray-500">Estimated Tax (GST)</p>
-                <p className="text-lg font-bold font-mono">{formatCurrency(totals.tax)}</p>
-              </div>
-              <div>
-                <p className="text-gray-500">Total Estimated PO Amount</p>
-                <p className="text-lg font-bold font-mono text-green-700">{formatCurrency(totals.total)}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-3 border-t pt-4">
-            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-            <Button onClick={handleSubmit} loading={createPO.isPending}>Save Draft PO</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* VIEW DETAILS DIALOG */}
       <Dialog open={Boolean(selectedPOId)} onOpenChange={(open) => { if (!open) setSelectedPOId(null); }}>

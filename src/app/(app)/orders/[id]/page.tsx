@@ -194,18 +194,18 @@ export default function OrderDetailPage() {
           {
             id: "1",
             name: "BODY FABRIC",
-            yarnRate: c.yarnCost ?? "",
-            knittingRate: c.knittingCost ?? "",
-            dyeingRate: c.dyeingCost ?? "",
+            yarnRate: c.yarnCost ? Number(c.yarnCost) : "",
+            knittingRate: c.knittingCost ? Number(c.knittingCost) : "",
+            dyeingRate: c.dyeingCost ? Number(c.dyeingCost) : "",
             heatsettingRate: "",
             centeringRate: "",
-            compactingRate: c.compactingCost ?? "",
+            compactingRate: c.compactingCost ? Number(c.compactingCost) : "",
             bioWashRate: "",
             lossPercent: "8",
             consumption: "0.269",
           }
         ],
-        cmt: c.stitchingCost ?? "",
+        cmt: c.stitchingCost ? Number(c.stitchingCost) : "",
         cmt_cutting: "",
         cmt_singer: "",
         cmt_powerTable: "",
@@ -213,9 +213,9 @@ export default function OrderDetailPage() {
         cmt_ironingPacking: "",
         packing: {
           ...prev.packing,
-          transports: c.packingCost ?? "",
+          transports: c.packingCost ? Number(c.packingCost) : "",
         },
-        profitPercent: c.profitPercent ?? "15",
+        profitPercent: c.profitPercent ? Number(c.profitPercent) : "15",
         remarks: c.remarks || "",
       }));
     }
@@ -416,6 +416,10 @@ export default function OrderDetailPage() {
   };
 
   const handlePrintPO = () => {
+    if (!order) {
+      toast.error("Order details are not loaded yet");
+      return;
+    }
     const calc = calculatedCosting;
     const printWindow = window.open("", "_blank");
     if (!printWindow) {

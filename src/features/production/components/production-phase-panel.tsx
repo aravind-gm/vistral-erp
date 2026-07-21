@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, CheckCircle2, Clock3, TriangleAlert } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock3, TriangleAlert, Search } from "lucide-react";
 import type { ComponentType, ReactNode, SVGProps } from "react";
 import { formatDate } from "@/features/dashboard/utils/formatters";
 import { Input } from "@/components/ui/input";
@@ -208,6 +208,7 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [checkedItems, setCheckedItems] = useState<boolean[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const batches = api.production.listBatches.useQuery({ page: 1, limit: 100 });
   const selectedBatchQuery = api.production.getBatchById.useQuery(
@@ -485,6 +486,16 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
   }, [selectedBatch?.id, config]);
 
   const rows = (batches.data?.data as any) ?? [];
+  const filteredRows = useMemo(() => {
+    if (!searchTerm) return rows;
+    const term = searchTerm.toLowerCase();
+    return rows.filter((batch: any) => 
+      batch.batchNo?.toLowerCase().includes(term) ||
+      batch.order?.orderNo?.toLowerCase().includes(term) ||
+      batch.order?.customer?.name?.toLowerCase().includes(term)
+    );
+  }, [rows, searchTerm]);
+
   const summary = useMemo(() => {
     const total = rows.length;
     const pending = rows.filter((batch: any) => config.getStatus(batch) === "PENDING").length;
@@ -512,88 +523,78 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
         </div>
       </div>
 
-      <Card className="border-[#111827] bg-[#111827] text-white shadow-sm">
-        <CardContent className="grid gap-6 p-6 lg:grid-cols-[1.6fr_1fr] lg:items-center">
+      <Card className="border border-gray-200 shadow-sm overflow-hidden bg-[#111827] text-white">
+        <CardContent className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-white/60">Stage focus</p>
-            <h2 className="mt-2 text-xl font-semibold">What this stage does</h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-white/75">{config.stageNote}</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {config.workflowSteps.map((step) => (
-                <span key={step} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80">
-                  {step}
-                </span>
-              ))}
-            </div>
+            <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-semibold">Stage focus</p>
+            <h2 className="text-lg font-bold mt-1">What this stage does</h2>
+            <p className="text-xs text-white/75 mt-1.5 max-w-3xl leading-relaxed">{config.stageNote}</p>
           </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="text-xs uppercase tracking-wide text-white/55">Total batches</p>
-              <p className="mt-2 text-2xl font-semibold">{summary.total}</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="text-xs uppercase tracking-wide text-white/55">Active</p>
-              <p className="mt-2 text-2xl font-semibold">{summary.active}</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="text-xs uppercase tracking-wide text-white/55">Completed</p>
-              <p className="mt-2 text-2xl font-semibold">{summary.completed}</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="text-xs uppercase tracking-wide text-white/55">Blocked</p>
-              <p className="mt-2 text-2xl font-semibold">{summary.blocked}</p>
-            </div>
+          <div className="flex flex-wrap gap-1.5 shrink-0 max-w-md md:justify-end">
+            {config.workflowSteps.map((step) => (
+              <span key={step} className="rounded-md bg-white/10 px-2 py-1 text-[10px] font-medium text-white/90">
+                {step}
+              </span>
+            ))}
           </div>
         </CardContent>
       </Card>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card className="border-l-4 border-l-gray-400 shadow-sm">
           <CardContent className="pt-6">
             <p className="text-sm text-[#6B7280]">Queue ready</p>
             <p className="mt-1 text-3xl font-bold text-[#111827]">{summary.pending}</p>
             <p className="mt-1 text-xs text-[#9CA3AF]">batches waiting to enter {config.title.toLowerCase()}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-l-4 border-l-amber-500 shadow-sm">
           <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-sm text-[#6B7280]"><Clock3 className="h-4 w-4" /> In progress</div>
+            <div className="flex items-center gap-2 text-sm text-[#6B7280]"><Clock3 className="h-4 w-4 text-amber-500" /> In progress</div>
             <p className="mt-1 text-3xl font-bold text-[#111827]">{summary.active}</p>
             <p className="mt-1 text-xs text-[#9CA3AF]">work currently on the floor</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-l-4 border-l-green-500 shadow-sm">
           <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-sm text-[#6B7280]"><CheckCircle2 className="h-4 w-4" /> Done</div>
+            <div className="flex items-center gap-2 text-sm text-[#6B7280]"><CheckCircle2 className="h-4 w-4 text-green-500" /> Done</div>
             <p className="mt-1 text-3xl font-bold text-[#111827]">{summary.completed}</p>
             <p className="mt-1 text-xs text-[#9CA3AF]">ready for the next handoff</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-l-4 border-l-red-500 shadow-sm">
           <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-sm text-[#6B7280]"><TriangleAlert className="h-4 w-4" /> Attention</div>
+            <div className="flex items-center gap-2 text-sm text-[#6B7280]"><TriangleAlert className="h-4 w-4 text-red-500" /> Attention</div>
             <p className="mt-1 text-3xl font-bold text-[#111827]">{summary.blocked}</p>
             <p className="mt-1 text-xs text-[#9CA3AF]">held or failed items needing review</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{config.title} batches</CardTitle>
+      <Card className="border border-gray-200 shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between pb-4">
+          <CardTitle className="text-base font-semibold">{config.title} Batches ({summary.total})</CardTitle>
+          <div className="relative w-72">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search by batch or order no..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 h-9 text-xs"
+            />
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           {batches.isLoading ? (
-            <div className="p-6 space-y-3">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <Skeleton key={index} className="h-14 w-full" />
-              ))}
-            </div>
-          ) : !rows.length ? (
+             <div className="p-6 space-y-3">
+               {Array.from({ length: 5 }).map((_, index) => (
+                 <Skeleton key={index} className="h-14 w-full" />
+               ))}
+             </div>
+          ) : !filteredRows.length ? (
             <div className="p-12 text-center text-gray-400">
-              <p className="font-medium">No production batches found</p>
-              <p className="text-sm mt-1">{config.emptyMessage}</p>
+              <p className="font-medium">{searchTerm ? "No matching batches found" : "No production batches found"}</p>
+              <p className="text-sm mt-1">{searchTerm ? "Try a different search term" : config.emptyMessage}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -610,7 +611,7 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {rows.map((batch: any) => {
+                  {filteredRows.map((batch: any) => {
                     const status = config.getStatus(batch);
                     return (
                       <tr key={batch.id} className="hover:bg-gray-50">

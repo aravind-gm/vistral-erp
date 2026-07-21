@@ -90,12 +90,8 @@ const navigation: NavItem[] = [
   },
   {
     title: "Finance",
+    href: "/finance",
     icon: DollarSign,
-    children: [
-      { title: "Invoices", href: "/finance/invoices", icon: FileText },
-      { title: "Payments", href: "/finance/payments", icon: DollarSign },
-      { title: "GST Reports", href: "/finance/gst", icon: FileText },
-    ],
   },
   {
     title: "Reports",

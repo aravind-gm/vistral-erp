@@ -84,64 +84,62 @@ export default function SuppliersPage() {
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
-              {data.data.map((supplier: typeof data.data[number]) => (
-                <div
-                  key={supplier.id}
-                  className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
-                      <span className="text-sm font-semibold text-orange-700">
-                        {supplier.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">
-                        {supplier.name}
-                      </p>
-                      <p className="text-sm text-gray-500">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100 bg-gray-50 text-left">
+                    <th className="px-6 py-3 font-medium text-gray-600">Supplier Name</th>
+                    <th className="px-6 py-3 font-medium text-gray-600">Contact Person</th>
+                    <th className="px-6 py-3 font-medium text-gray-600">Phone</th>
+                    <th className="px-6 py-3 font-medium text-gray-600">Email</th>
+                    <th className="px-6 py-3 font-medium text-gray-600">Location</th>
+                    <th className="px-6 py-3 font-medium text-gray-600">Status</th>
+                    <th className="px-6 py-3 font-medium text-gray-600 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {data.data.map((supplier: typeof data.data[number]) => (
+                    <tr key={supplier.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 font-semibold text-gray-900">
+                        <div>{supplier.name}</div>
+                        <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded mt-1 inline-block">
+                          {supplier.supplierType}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">{supplier.contactPerson || "-"}</td>
+                      <td className="px-6 py-4 text-gray-600">{supplier.phone || "-"}</td>
+                      <td className="px-6 py-4 text-gray-600">{supplier.email || "-"}</td>
+                      <td className="px-6 py-4 text-gray-600">
                         {supplier.city ?? ""}{supplier.city && supplier.state ? ", " : ""}{supplier.state ?? ""}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-6">
-                    {supplier.phone && (
-                      <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                        <Phone className="h-3.5 w-3.5" />
-                        {supplier.phone}
-                      </div>
-                    )}
-                    {supplier.email && (
-                      <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                        <Mail className="h-3.5 w-3.5" />
-                        {supplier.email}
-                      </div>
-                    )}
-                    <Badge variant={supplier.isActive ? "success" : "secondary"}>
-                      {supplier.isActive ? "Active" : "Inactive"}
-                    </Badge>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-red-600"
-                          onClick={() => deleteSupplier.mutate({ id: supplier.id })}
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              ))}
+                      </td>
+                      <td className="px-6 py-4">
+                        <Badge variant={supplier.isActive ? "success" : "secondary"}>
+                          {supplier.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>View Details</DropdownMenuItem>
+                            <DropdownMenuItem>Edit</DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => deleteSupplier.mutate({ id: supplier.id })}
+                            >
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
