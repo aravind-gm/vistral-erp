@@ -635,8 +635,11 @@ model ProductionBatch {
   knitting       KnittingProcess?
   greyFabric     GreyFabric?
   dyeingProcess  DyeingProcess?
+  heatsetting    HeatsettingProcess?
+  centering      CenteringProcess?
   printingProcess PrintingProcess?
   compacting     CompactingProcess?
+  bioWash        BioWashProcess?
   checking       CheckingProcess?
   cutting        CuttingProcess?
   stitching      StitchingProcess?
@@ -1102,4 +1105,74 @@ model Notification {
   @@index([userId])
   @@index([isRead])
   @@map("notifications")
+}
+
+// ============================================================
+// HEATSETTING
+// ============================================================
+
+model HeatsettingProcess {
+  id              String          @id @default(cuid())
+  batchId         String          @unique
+  batch           ProductionBatch @relation(fields: [batchId], references: [id])
+  tempCelsius     Decimal?        @db.Decimal(8, 2)
+  speedMpm        Decimal?        @db.Decimal(8, 2)
+  fabricIn        Decimal         @default(0) @db.Decimal(12, 3)
+  fabricOut       Decimal         @default(0) @db.Decimal(12, 3)
+  status          ProductionStatus @default(PENDING)
+  startDate       DateTime?
+  completedDate   DateTime?
+  remarks         String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  createdBy       String
+  updatedBy       String
+
+  @@map("heatsetting_processes")
+}
+
+// ============================================================
+// CENTERING
+// ============================================================
+
+model CenteringProcess {
+  id              String          @id @default(cuid())
+  batchId         String          @unique
+  batch           ProductionBatch @relation(fields: [batchId], references: [id])
+  widthInches     Decimal?        @db.Decimal(8, 2)
+  fabricIn        Decimal         @default(0) @db.Decimal(12, 3)
+  fabricOut       Decimal         @default(0) @db.Decimal(12, 3)
+  status          ProductionStatus @default(PENDING)
+  startDate       DateTime?
+  completedDate   DateTime?
+  remarks         String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  createdBy       String
+  updatedBy       String
+
+  @@map("centering_processes")
+}
+
+// ============================================================
+// BIO WASH
+// ============================================================
+
+model BioWashProcess {
+  id              String          @id @default(cuid())
+  batchId         String          @unique
+  batch           ProductionBatch @relation(fields: [batchId], references: [id])
+  enzymeUsed      String?
+  fabricIn        Decimal         @default(0) @db.Decimal(12, 3)
+  fabricOut       Decimal         @default(0) @db.Decimal(12, 3)
+  status          ProductionStatus @default(PENDING)
+  startDate       DateTime?
+  completedDate   DateTime?
+  remarks         String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  createdBy       String
+  updatedBy       String
+
+  @@map("bio_wash_processes")
 }
