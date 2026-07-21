@@ -374,6 +374,7 @@ model Order {
   id              String      @id @default(cuid())
   orderNo         String      @unique
   customerId      String
+  companyName     String?
   customer        Customer    @relation(fields: [customerId], references: [id])
   buyerOrderNo    String?
   styleNo         String?
@@ -420,6 +421,14 @@ model OrderDetail {
   fabricType   FabricType? @relation(fields: [fabricTypeId], references: [id])
   color        String
   size         String?
+  styleNo      String?
+  xs           Int        @default(0)
+  s            Int        @default(0)
+  m            Int        @default(0)
+  l            Int        @default(0)
+  xl           Int        @default(0)
+  xxl          Int        @default(0)
+  xxxl         Int        @default(0)
   quantity     Int
   unitPrice    Decimal    @db.Decimal(12, 4)
   amount       Decimal    @db.Decimal(15, 2)
@@ -458,6 +467,7 @@ model OrderCosting {
   remarks             String?
   approvedBy          String?
   approvedAt          DateTime?
+  costingDetails      Json?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   createdBy           String

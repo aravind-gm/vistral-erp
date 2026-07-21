@@ -6,7 +6,7 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const fallbackLocalDatabaseUrl = "postgresql://postgres@127.0.0.1:5445/vistral_erp";
+const fallbackLocalDatabaseUrl = "postgresql://postgres@127.0.0.1:5446/vistral_erp";
 
 function resolveConnectionString() {
   const connectionString = process.env.DATABASE_URL;

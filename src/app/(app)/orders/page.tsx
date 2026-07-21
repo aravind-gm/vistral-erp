@@ -164,7 +164,10 @@ export default function OrdersPage() {
                       className="cursor-pointer"
                       onClick={() => router.push(`/orders/${order.id}`)}
                     >
-                      <p className="text-sm font-medium text-[#111827]">{order.customer.name}</p>
+                      <p className="text-sm font-medium text-[#111827]">
+                        {order.customer.name}
+                        {order.companyName ? ` (${order.companyName})` : ""}
+                      </p>
                       <p className="text-xs text-[#9CA3AF]">
                         {order.styleName ?? order.buyerOrderNo ?? "—"}
                       </p>

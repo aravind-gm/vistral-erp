@@ -6,7 +6,15 @@ const orderDetailSchema = z.object({
   fabricTypeId: z.string().optional(),
   color: z.string().min(1, "Color is required"),
   size: z.string().optional(),
-  quantity: z.number().min(1),
+  styleNo: z.string().optional(),
+  xs: z.number().default(0),
+  s: z.number().default(0),
+  m: z.number().default(0),
+  l: z.number().default(0),
+  xl: z.number().default(0),
+  xxl: z.number().default(0),
+  xxxl: z.number().default(0),
+  quantity: z.number().min(0),
   unitPrice: z.number().min(0),
   amount: z.number().min(0),
   gsm: z.number().optional(),
@@ -16,6 +24,7 @@ const orderDetailSchema = z.object({
 
 const createOrderSchema = z.object({
   customerId: z.string().min(1, "Customer is required"),
+  companyName: z.string().optional(),
   buyerOrderNo: z.string().optional(),
   styleNo: z.string().optional(),
   styleName: z.string().optional(),
@@ -73,6 +82,7 @@ export const ordersRouter = createTRPCRouter({
         select: {
           id: true,
           orderNo: true,
+          companyName: true,
           buyerOrderNo: true,
           styleName: true,
           status: true,
@@ -97,6 +107,21 @@ export const ordersRouter = createTRPCRouter({
         totalPages: Math.ceil(total / limit),
       },
     };
+  }),
+
+  listWithCosting: protectedProcedure.query(async () => {
+    return prisma.order.findMany({
+      where: {
+        deletedAt: null,
+        orderCosting: { isNot: null },
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        customer: true,
+        orderCosting: true,
+        orderDetails: true,
+      },
+    });
   }),
 
   byId: protectedProcedure
@@ -201,6 +226,10 @@ export const ordersRouter = createTRPCRouter({
       packingCost: z.number().min(0).optional(),
       overheadPercent: z.number().min(0).max(100).optional(),
       profitPercent: z.number().min(0).max(100).optional(),
+      totalCostPerPc: z.number().min(0).optional(),
+      sellingPricePerPc: z.number().min(0).optional(),
+      totalOrderValue: z.number().min(0).optional(),
+      costingDetails: z.any().optional(),
       remarks: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
@@ -226,11 +255,15 @@ export const ordersRouter = createTRPCRouter({
       const overheadPercent = input.overheadPercent ?? (existingCosting ? Number(existingCosting.overheadPercent) : 10);
       const profitPercent = input.profitPercent ?? (existingCosting ? Number(existingCosting.profitPercent) : 15);
 
-      const totalCostPerPc = yarnCost + knittingCost + dyeingCost + printingCost + compactingCost + cuttingCost + stitchingCost + packingCost;
+      const computedTotalCost = yarnCost + knittingCost + dyeingCost + printingCost + compactingCost + cuttingCost + stitchingCost + packingCost;
+      const totalCostPerPc = input.totalCostPerPc ?? computedTotalCost;
+
       const overheadAmount = totalCostPerPc * (overheadPercent / 100);
       const profitAmount = totalCostPerPc * (profitPercent / 100);
-      const sellingPricePerPc = totalCostPerPc + overheadAmount + profitAmount;
-      const totalOrderValue = sellingPricePerPc * orderQty;
+      const computedSellingPrice = totalCostPerPc + overheadAmount + profitAmount;
+      const sellingPricePerPc = input.sellingPricePerPc ?? computedSellingPrice;
+
+      const totalOrderValue = input.totalOrderValue ?? (sellingPricePerPc * orderQty);
 
       return prisma.orderCosting.upsert({
         where: { orderId: input.orderId },
@@ -249,6 +282,7 @@ export const ordersRouter = createTRPCRouter({
           totalCostPerPc,
           sellingPricePerPc,
           totalOrderValue,
+          costingDetails: input.costingDetails ? JSON.parse(JSON.stringify(input.costingDetails)) : undefined,
           remarks: input.remarks,
           createdBy: ctx.session.user.id,
           updatedBy: ctx.session.user.id,
@@ -267,6 +301,7 @@ export const ordersRouter = createTRPCRouter({
           totalCostPerPc,
           sellingPricePerPc,
           totalOrderValue,
+          costingDetails: input.costingDetails ? JSON.parse(JSON.stringify(input.costingDetails)) : undefined,
           remarks: input.remarks ?? undefined,
           updatedBy: ctx.session.user.id,
         },

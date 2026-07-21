@@ -16,8 +16,16 @@ import { Plus, Trash2 } from "lucide-react";
 import type { Resolver } from "react-hook-form";
 
 const detailSchema = z.object({
+  styleNo: z.string().optional(),
   color: z.string().min(1, "Color required"),
-  quantity: z.number().min(1),
+  xs: z.number().default(0),
+  s: z.number().default(0),
+  m: z.number().default(0),
+  l: z.number().default(0),
+  xl: z.number().default(0),
+  xxl: z.number().default(0),
+  xxxl: z.number().default(0),
+  quantity: z.number().min(0),
   unitPrice: z.number().min(0),
   amount: z.number().min(0),
   composition: z.string().optional(),
@@ -26,6 +34,7 @@ const detailSchema = z.object({
 
 const orderSchema = z.object({
   customerId: z.string().min(1, "Customer required"),
+  companyName: z.string().optional(),
   buyerOrderNo: z.string().optional(),
   styleName: z.string().optional(),
   quantity: z.number().min(1, "Quantity required"),
@@ -48,11 +57,62 @@ export default function NewOrderPage() {
     defaultValues: {
       unit: "PCS",
       orderDate: new Date(),
-      details: [{ color: "", quantity: 1, unitPrice: 0, amount: 0 }],
+      details: [{ styleNo: "", color: "", quantity: 0, unitPrice: 0, amount: 0, xs: 0, s: 0, m: 0, l: 0, xl: 0, xxl: 0, xxxl: 0 }],
     },
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: "details" });
+
+  const updateCalculations = (idx: number) => {
+    const xs = watch(`details.${idx}.xs`) || 0;
+    const s = watch(`details.${idx}.s`) || 0;
+    const m = watch(`details.${idx}.m`) || 0;
+    const l = watch(`details.${idx}.l`) || 0;
+    const xl = watch(`details.${idx}.xl`) || 0;
+    const xxl = watch(`details.${idx}.xxl`) || 0;
+    const xxxl = watch(`details.${idx}.xxxl`) || 0;
+    
+    const qty = xs + s + m + l + xl + xxl + xxxl;
+    setValue(`details.${idx}.quantity`, qty);
+    
+    const price = watch(`details.${idx}.unitPrice`) || 0;
+    setValue(`details.${idx}.amount`, qty * price);
+    
+    // Update global total quantity
+    setTimeout(() => {
+      const allDetails = watch("details") || [];
+      const totalQty = allDetails.reduce((sum, item) => {
+        const itemXs = item.xs || 0;
+        const itemS = item.s || 0;
+        const itemM = item.m || 0;
+        const itemL = item.l || 0;
+        const itemXl = item.xl || 0;
+        const itemXxl = item.xxl || 0;
+        const itemXxxl = item.xxxl || 0;
+        return sum + (itemXs + itemS + itemM + itemL + itemXl + itemXxl + itemXxxl);
+      }, 0);
+      setValue("quantity", totalQty);
+    }, 0);
+  };
+
+  const handleRemove = (idx: number) => {
+    remove(idx);
+    // Recalculate global total quantity after removing the row
+    setTimeout(() => {
+      const allDetails = watch("details") || [];
+      const totalQty = allDetails.reduce((sum, item) => {
+        const itemXs = item.xs || 0;
+        const itemS = item.s || 0;
+        const itemM = item.m || 0;
+        const itemL = item.l || 0;
+        const itemXl = item.xl || 0;
+        const itemXxl = item.xxl || 0;
+        const itemXxxl = item.xxxl || 0;
+        return sum + (itemXs + itemS + itemM + itemL + itemXl + itemXxl + itemXxxl);
+      }, 0);
+      setValue("quantity", totalQty);
+    }, 0);
+  };
 
   const createOrder = api.orders.create.useMutation({
     onSuccess: () => { toast.success("Order created"); router.push("/orders"); },
@@ -62,7 +122,7 @@ export default function NewOrderPage() {
   const onSubmit = (data: OrderForm) => createOrder.mutate(data);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">New Order</h1>
         <p className="text-sm text-gray-500 mt-1">Create a new customer order</p>
@@ -83,6 +143,11 @@ export default function NewOrderPage() {
                 </SelectContent>
               </Select>
               {errors.customerId && <p className="text-xs text-red-500">{errors.customerId.message}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Company / Secondary Name (Classification)</Label>
+              <Input {...register("companyName")} placeholder="e.g. AK Exports, AK Retail" />
             </div>
 
             <div className="space-y-1.5">
@@ -145,7 +210,7 @@ export default function NewOrderPage() {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Items / Colors</CardTitle>
             <Button type="button" variant="outline" size="sm"
-              onClick={() => append({ color: "", quantity: 1, unitPrice: 0, amount: 0 })}>
+              onClick={() => append({ styleNo: "", color: "", quantity: 0, unitPrice: 0, amount: 0, xs: 0, s: 0, m: 0, l: 0, xl: 0, xxl: 0, xxxl: 0 })}>
               <Plus className="h-4 w-4 mr-1" /> Add Row
             </Button>
           </CardHeader>
@@ -153,40 +218,75 @@ export default function NewOrderPage() {
             {errors.details && (
               <p className="text-xs text-red-500">{errors.details.root?.message ?? errors.details.message}</p>
             )}
+            
+            <div className="grid grid-cols-[1.5fr_1.5fr_1.2fr_1.2fr_0.8fr_0.8fr_0.8fr_0.8fr_0.8fr_0.8fr_0.8fr_1.2fr_auto] gap-2 items-center pb-2 border-b border-[#E5E7EB] text-xs font-semibold text-[#374151]">
+              <div>Style No</div>
+              <div>Color *</div>
+              <div>Final Cost</div>
+              <div className="text-center">Order Qty</div>
+              <div className="text-center">XS</div>
+              <div className="text-center">S</div>
+              <div className="text-center">M</div>
+              <div className="text-center">L</div>
+              <div className="text-center">XL</div>
+              <div className="text-center">XXL</div>
+              <div className="text-center">3XL</div>
+              <div className="text-right pr-2">Amount</div>
+              <div className="w-8"></div>
+            </div>
+
             {fields.map((field, idx) => (
-              <div key={field.id} className="grid grid-cols-5 gap-2 items-end">
-                <div className="space-y-1">
-                  <Label className="text-xs">Color *</Label>
-                  <Input {...register(`details.${idx}.color`)} placeholder="White" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Qty *</Label>
-                  <Input type="number" {...register(`details.${idx}.quantity`, {
-                    valueAsNumber: true,
-                    onChange: (e) => {
-                      const qty = parseFloat(e.target.value) || 0;
-                      const rate = watch(`details.${idx}.unitPrice`) || 0;
-                      setValue(`details.${idx}.amount`, qty * rate);
-                    }
-                  })} placeholder="0" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Unit Price</Label>
-                  <Input type="number" step="0.01" {...register(`details.${idx}.unitPrice`, {
-                    valueAsNumber: true,
-                    onChange: (e) => {
-                      const rate = parseFloat(e.target.value) || 0;
-                      const qty = watch(`details.${idx}.quantity`) || 0;
-                      setValue(`details.${idx}.amount`, qty * rate);
-                    }
-                  })} placeholder="0.00" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Amount</Label>
-                  <Input type="number" step="0.01" {...register(`details.${idx}.amount`, { valueAsNumber: true })} placeholder="0.00" />
-                </div>
-                <Button type="button" variant="ghost" size="icon" onClick={() => remove(idx)}
-                  disabled={fields.length === 1} className="text-red-400 hover:text-red-600">
+              <div key={field.id} className="grid grid-cols-[1.5fr_1.5fr_1.2fr_1.2fr_0.8fr_0.8fr_0.8fr_0.8fr_0.8fr_0.8fr_0.8fr_1.2fr_auto] gap-2 items-center">
+                <Input {...register(`details.${idx}.styleNo`)} placeholder="Style No" className="h-8 text-xs" />
+                
+                <Input {...register(`details.${idx}.color`)} placeholder="Color" className="h-8 text-xs" />
+                
+                <Input type="number" step="0.01" {...register(`details.${idx}.unitPrice`, {
+                  valueAsNumber: true,
+                  onChange: () => updateCalculations(idx)
+                })} placeholder="0.00" className="h-8 text-xs text-right" />
+                
+                <Input type="number" {...register(`details.${idx}.quantity`, { valueAsNumber: true })} readOnly placeholder="0" className="h-8 text-xs text-center bg-gray-50 border-gray-200" />
+                
+                <Input type="number" {...register(`details.${idx}.xs`, {
+                  valueAsNumber: true,
+                  onChange: () => updateCalculations(idx)
+                })} placeholder="0" className="h-8 text-xs text-center" />
+                
+                <Input type="number" {...register(`details.${idx}.s`, {
+                  valueAsNumber: true,
+                  onChange: () => updateCalculations(idx)
+                })} placeholder="0" className="h-8 text-xs text-center" />
+                
+                <Input type="number" {...register(`details.${idx}.m`, {
+                  valueAsNumber: true,
+                  onChange: () => updateCalculations(idx)
+                })} placeholder="0" className="h-8 text-xs text-center" />
+                
+                <Input type="number" {...register(`details.${idx}.l`, {
+                  valueAsNumber: true,
+                  onChange: () => updateCalculations(idx)
+                })} placeholder="0" className="h-8 text-xs text-center" />
+                
+                <Input type="number" {...register(`details.${idx}.xl`, {
+                  valueAsNumber: true,
+                  onChange: () => updateCalculations(idx)
+                })} placeholder="0" className="h-8 text-xs text-center" />
+                
+                <Input type="number" {...register(`details.${idx}.xxl`, {
+                  valueAsNumber: true,
+                  onChange: () => updateCalculations(idx)
+                })} placeholder="0" className="h-8 text-xs text-center" />
+                
+                <Input type="number" {...register(`details.${idx}.xxxl`, {
+                  valueAsNumber: true,
+                  onChange: () => updateCalculations(idx)
+                })} placeholder="0" className="h-8 text-xs text-center" />
+                
+                <Input type="number" step="0.01" {...register(`details.${idx}.amount`, { valueAsNumber: true })} readOnly placeholder="0.00" className="h-8 text-xs text-right bg-gray-50 border-gray-200" />
+                
+                <Button type="button" variant="ghost" size="icon" onClick={() => handleRemove(idx)}
+                  disabled={fields.length === 1} className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>

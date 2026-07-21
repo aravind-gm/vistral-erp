@@ -23,11 +23,21 @@ export async function createTRPCContext(req: NextRequest): Promise<Context> {
   const genericUser = decodeGenericSession(genericCookie);
 
   if (genericUser) {
+    let userId = genericUser.id;
+    if (userId === "test-admin") {
+      const dbUser = await prisma.user.findUnique({
+        where: { email: genericUser.email },
+        select: { id: true },
+      });
+      if (dbUser) {
+        userId = dbUser.id;
+      }
+    }
     return {
       req,
       session: {
         user: {
-          id: genericUser.id,
+          id: userId,
           name: genericUser.name,
           email: genericUser.email,
           role: genericUser.role,

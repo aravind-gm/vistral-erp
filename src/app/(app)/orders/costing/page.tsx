@@ -99,7 +99,7 @@ export default function Page() {
                 {data.data.map((order) => (
                   <div key={order.id} className="grid grid-cols-[160px_1fr_140px_140px_120px_120px_120px] items-center gap-4 px-4 py-3 hover:bg-[#FAFAFA]">
                     <span className="font-mono text-sm text-[#111827]">{order.orderNo}</span>
-                    <span className="text-sm text-[#374151]">{order.customer.name}</span>
+                    <span className="text-sm text-[#374151]">{order.customer.name}{order.companyName ? ` (${order.companyName})` : ""}</span>
                     <Badge variant={getOrderStatusVariant(order.status)}>{order.status}</Badge>
                     <span className="text-sm text-[#374151]">{order.deliveryDate ? formatDate(order.deliveryDate) : "-"}</span>
                     <span className="text-sm text-[#374151]">{order.quantity.toLocaleString("en-IN")}</span>

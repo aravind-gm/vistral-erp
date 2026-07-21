@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { encodeGenericSession, TEST_AUTH_COOKIE } from "@/lib/generic-auth";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as {
@@ -17,11 +18,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
   }
 
+  const dbUser = await prisma.user.findUnique({
+    where: { email },
+  });
+
   const sessionUser = {
-    id: "test-admin",
-    name: "Administrator",
+    id: dbUser?.id ?? "test-admin",
+    name: dbUser?.name ?? "Administrator",
     email,
-    role: "OWNER",
+    role: dbUser?.role ?? "OWNER",
   };
 
   const response = NextResponse.json({ session: { user: sessionUser } });
