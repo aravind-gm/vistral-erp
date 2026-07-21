@@ -93,6 +93,34 @@ export type ProductionBatchRecord = {
     completedDate?: Date | string | null;
     remarks?: string | null;
   } | null;
+  heatsetting?: {
+    status?: string | null;
+    tempCelsius?: string | number | null;
+    speedMpm?: string | number | null;
+    fabricIn?: string | number | null;
+    fabricOut?: string | number | null;
+    startDate?: Date | string | null;
+    completedDate?: Date | string | null;
+    remarks?: string | null;
+  } | null;
+  centering?: {
+    status?: string | null;
+    widthInches?: string | number | null;
+    fabricIn?: string | number | null;
+    fabricOut?: string | number | null;
+    startDate?: Date | string | null;
+    completedDate?: Date | string | null;
+    remarks?: string | null;
+  } | null;
+  bioWash?: {
+    status?: string | null;
+    enzymeUsed?: string | null;
+    fabricIn?: string | number | null;
+    fabricOut?: string | number | null;
+    startDate?: Date | string | null;
+    completedDate?: Date | string | null;
+    remarks?: string | null;
+  } | null;
   printingProcess?: {
     status?: string | null;
     printType?: string | null;
