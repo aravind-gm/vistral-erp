@@ -64,11 +64,11 @@ export default function Page() {
           <p className="text-sm text-[#6B7280] mt-1">Define yarn categories and specifications.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => router.push("/yarn") }>
-            <ArrowLeft className="h-4 w-4 mr-2" /> Yarn
+          <Button variant="outline" onClick={() => router.push("/yarn/procurement") }>
+            <ArrowLeft className="h-4 w-4 mr-2" /> Back
           </Button>
-          <Button onClick={() => router.push("/yarn") }>
-            <Package className="h-4 w-4 mr-2" /> Open Yarn
+          <Button onClick={() => router.push("/yarn/procurement") }>
+            <Package className="h-4 w-4 mr-2" /> Yarn Procurement
           </Button>
         </div>
       </div>
