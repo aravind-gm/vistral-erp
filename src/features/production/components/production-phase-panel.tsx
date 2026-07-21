@@ -475,11 +475,20 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
         case "Dyeing":
           await updateDyeing.mutateAsync(payload as any);
           break;
+        case "Heatsetting":
+          await updateHeatsetting.mutateAsync(payload as any);
+          break;
+        case "Centering":
+          await updateCentering.mutateAsync(payload as any);
+          break;
         case "Printing":
           await updatePrinting.mutateAsync(payload as any);
           break;
         case "Compacting":
           await updateCompacting.mutateAsync(payload as any);
+          break;
+        case "Bio Wash":
+          await updateBioWash.mutateAsync(payload as any);
           break;
         case "Checking / QC":
           await updateChecking.mutateAsync(payload as any);
@@ -693,6 +702,144 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
                         </Badge>
                       )) || <span className="text-[10px] text-gray-400">-</span>}
                     </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      }
+      case "Heatsetting": {
+        const hsVal = selectedBatch.heatsetting || {};
+        const fabricTarget = fabrics[0] || {};
+        const targetRate = parseFloat(fabricTarget.heatsettingRate) || 0;
+        
+        return (
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="bg-gray-50 border border-gray-150 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase">
+                  <Target className="h-4 w-4 text-orange-500" />
+                  Budgeted Heatsetting Rate
+                </div>
+                <div className="mt-2 flex justify-between items-baseline">
+                  <div>
+                    <p className="text-xl font-extrabold text-gray-900">₹{targetRate.toFixed(2)}/Kg</p>
+                    <p className="text-xs text-gray-400">Budgeted target/Kg</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-orange-600">{hsVal.tempCelsius ? `${hsVal.tempCelsius} °C` : "-"}</p>
+                    <p className="text-[10px] text-gray-400">Temp / Speed: {hsVal.speedMpm ? `${hsVal.speedMpm} m/min` : "-"}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gray-50 border border-gray-150 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase">
+                  <Scale className="h-4 w-4 text-emerald-500" />
+                  Fabric In / Out
+                </div>
+                <div className="mt-2 flex justify-between items-baseline">
+                  <div>
+                    <p className="text-xl font-extrabold text-gray-900">{hsVal.fabricOut ? `${Number(hsVal.fabricOut).toFixed(2)} Kg` : "-"}</p>
+                    <p className="text-xs text-gray-400">Actual Fabric Out (In: {hsVal.fabricIn ? `${Number(hsVal.fabricIn).toFixed(2)} Kg` : "-"})</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-emerald-600">{(parseFloat(fabricTarget.consumption || 0) * batchQty).toFixed(2)} Kg</p>
+                    <p className="text-[10px] text-gray-400">Target output</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      }
+      case "Centering": {
+        const cntVal = selectedBatch.centering || {};
+        const fabricTarget = fabrics[0] || {};
+        const targetRate = parseFloat(fabricTarget.centeringRate) || 0;
+        
+        return (
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="bg-gray-50 border border-gray-150 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase">
+                  <Target className="h-4 w-4 text-teal-500" />
+                  Budgeted Centering Rate
+                </div>
+                <div className="mt-2 flex justify-between items-baseline">
+                  <div>
+                    <p className="text-xl font-extrabold text-gray-900">₹{targetRate.toFixed(2)}/Kg</p>
+                    <p className="text-xs text-gray-400">Budgeted target/Kg</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-teal-600">{cntVal.widthInches ? `${cntVal.widthInches} "` : "-"}</p>
+                    <p className="text-[10px] text-gray-400">Actual centered width</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gray-50 border border-gray-150 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase">
+                  <Scale className="h-4 w-4 text-emerald-500" />
+                  Fabric In / Out
+                </div>
+                <div className="mt-2 flex justify-between items-baseline">
+                  <div>
+                    <p className="text-xl font-extrabold text-gray-900">{cntVal.fabricOut ? `${Number(cntVal.fabricOut).toFixed(2)} Kg` : "-"}</p>
+                    <p className="text-xs text-gray-400">Actual Fabric Out (In: {cntVal.fabricIn ? `${Number(cntVal.fabricIn).toFixed(2)} Kg` : "-"})</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-emerald-600">{(parseFloat(fabricTarget.consumption || 0) * batchQty).toFixed(2)} Kg</p>
+                    <p className="text-[10px] text-gray-400">Target output</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      }
+      case "Bio Wash": {
+        const bwVal = selectedBatch.bioWash || {};
+        const fabricTarget = fabrics[0] || {};
+        const targetRate = parseFloat(fabricTarget.bioWashRate) || 0;
+        
+        return (
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="bg-gray-50 border border-gray-150 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase">
+                  <Target className="h-4 w-4 text-pink-500" />
+                  Budgeted Bio Wash Rate
+                </div>
+                <div className="mt-2 flex justify-between items-baseline">
+                  <div>
+                    <p className="text-xl font-extrabold text-gray-900">₹{targetRate.toFixed(2)}/Kg</p>
+                    <p className="text-xs text-gray-400">Budgeted target/Kg</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-semibold text-gray-700">Enzyme/Chemical:</p>
+                    <p className="text-[11px] font-bold text-pink-600 mt-1 max-w-[150px] truncate" title={bwVal.enzymeUsed || ""}>{bwVal.enzymeUsed || "-"}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gray-50 border border-gray-150 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase">
+                  <Scale className="h-4 w-4 text-emerald-500" />
+                  Fabric In / Out
+                </div>
+                <div className="mt-2 flex justify-between items-baseline">
+                  <div>
+                    <p className="text-xl font-extrabold text-gray-900">{bwVal.fabricOut ? `${Number(bwVal.fabricOut).toFixed(2)} Kg` : "-"}</p>
+                    <p className="text-xs text-gray-400">Actual Fabric Out (In: {bwVal.fabricIn ? `${Number(bwVal.fabricIn).toFixed(2)} Kg` : "-"})</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-emerald-600">{(parseFloat(fabricTarget.consumption || 0) * batchQty).toFixed(2)} Kg</p>
+                    <p className="text-[10px] text-gray-400">Target output</p>
                   </div>
                 </div>
               </CardContent>
@@ -1048,8 +1195,11 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
                               updateKnitting.isPending ||
                               updateGreyFabric.isPending ||
                               updateDyeing.isPending ||
+                              updateHeatsetting.isPending ||
+                              updateCentering.isPending ||
                               updatePrinting.isPending ||
                               updateCompacting.isPending ||
+                              updateBioWash.isPending ||
                               updateChecking.isPending ||
                               updateCutting.isPending ||
                               updateStitching.isPending ||
