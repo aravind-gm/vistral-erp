@@ -590,7 +590,7 @@ export default function NewProcurementPage() {
                               <span>Fabric Requirement</span>
                               <Button
                                 type="button"
-                                size="xs"
+                                size="sm"
                                 variant="outline"
                                 onClick={() => handleImportAllForOrder(orderItem)}
                                 className="h-5 px-1.5 text-[9px] font-bold border-green-600 text-green-600 hover:bg-green-50 flex items-center gap-0.5"
