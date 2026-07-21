@@ -1,0 +1,3 @@
+@echo off
+echo Starting Vistral ERP...
+npm.cmd run dev
