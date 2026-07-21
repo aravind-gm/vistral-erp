@@ -220,8 +220,11 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
   const updateKnitting = api.production.updateKnitting.useMutation();
   const updateGreyFabric = api.production.updateGreyFabric.useMutation();
   const updateDyeing = api.production.updateDyeing.useMutation();
+  const updateHeatsetting = api.production.updateHeatsetting.useMutation();
+  const updateCentering = api.production.updateCentering.useMutation();
   const updatePrinting = api.production.updatePrinting.useMutation();
   const updateCompacting = api.production.updateCompacting.useMutation();
+  const updateBioWash = api.production.updateBioWash.useMutation();
   const updateChecking = api.production.updateChecking.useMutation();
   const updateCutting = api.production.updateCutting.useMutation();
   const updateStitching = api.production.updateStitching.useMutation();
@@ -263,6 +266,21 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
           { name: "costPerKg", label: "Cost Per KG", type: "number" },
           { name: "remarks", label: "Remarks", type: "textarea" },
         ];
+      case "Heatsetting":
+        return [
+          { name: "tempCelsius", label: "Temperature (°C)", type: "number" },
+          { name: "speedMpm", label: "Speed (m/min)", type: "number" },
+          { name: "fabricIn", label: "Fabric In (KG)", type: "number" },
+          { name: "fabricOut", label: "Fabric Out (KG)", type: "number" },
+          { name: "remarks", label: "Remarks", type: "textarea" },
+        ];
+      case "Centering":
+        return [
+          { name: "widthInches", label: "Width (inches)", type: "number" },
+          { name: "fabricIn", label: "Fabric In (KG)", type: "number" },
+          { name: "fabricOut", label: "Fabric Out (KG)", type: "number" },
+          { name: "remarks", label: "Remarks", type: "textarea" },
+        ];
       case "Printing":
         return [
           { name: "printType", label: "Print Type", type: "text" },
@@ -279,6 +297,13 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
           { name: "fabricIn", label: "Fabric In (KG)", type: "number" },
           { name: "fabricOut", label: "Fabric Out (KG)", type: "number" },
           { name: "shrinkage", label: "Shrinkage %", type: "number" },
+          { name: "remarks", label: "Remarks", type: "textarea" },
+        ];
+      case "Bio Wash":
+        return [
+          { name: "enzymeUsed", label: "Enzyme / Chemical Used", type: "text" },
+          { name: "fabricIn", label: "Fabric In (KG)", type: "number" },
+          { name: "fabricOut", label: "Fabric Out (KG)", type: "number" },
           { name: "remarks", label: "Remarks", type: "textarea" },
         ];
       case "Checking / QC":
@@ -344,10 +369,16 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
         return batch.greyFabric;
       case "Dyeing":
         return batch.dyeingProcess;
+      case "Heatsetting":
+        return batch.heatsetting;
+      case "Centering":
+        return batch.centering;
       case "Printing":
         return batch.printingProcess;
       case "Compacting":
         return batch.compacting;
+      case "Bio Wash":
+        return batch.bioWash;
       case "Checking / QC":
         return batch.checking;
       case "Cutting":

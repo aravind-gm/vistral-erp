@@ -39,8 +39,11 @@ export const productionRouter = createTRPCRouter({
             },
             knitting: { select: { status: true } },
             dyeingProcess: { select: { status: true } },
+            heatsetting: { select: { status: true } },
+            centering: { select: { status: true } },
             stitching: { select: { status: true } },
             packing: { select: { status: true } },
+            bioWash: { select: { status: true } },
             dispatch: { select: { dispatchNo: true } },
           },
         }),
@@ -318,6 +321,61 @@ export const productionRouter = createTRPCRouter({
       }
     }),
 
+  updateHeatsetting: protectedProcedure
+    .input(z.object({
+      batchId: z.string(),
+      tempCelsius: z.number().optional(),
+      speedMpm: z.number().optional(),
+      fabricIn: z.number().optional(),
+      fabricOut: z.number().optional(),
+      status: batchStatusEnum.optional(),
+      remarks: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { batchId, ...data } = input;
+      return prisma.heatsettingProcess.upsert({
+        where: { batchId },
+        create: { batchId, ...data, createdBy: ctx.session.user.id, updatedBy: ctx.session.user.id },
+        update: { ...data, updatedBy: ctx.session.user.id },
+      });
+    }),
+
+  updateCentering: protectedProcedure
+    .input(z.object({
+      batchId: z.string(),
+      widthInches: z.number().optional(),
+      fabricIn: z.number().optional(),
+      fabricOut: z.number().optional(),
+      status: batchStatusEnum.optional(),
+      remarks: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { batchId, ...data } = input;
+      return prisma.centeringProcess.upsert({
+        where: { batchId },
+        create: { batchId, ...data, createdBy: ctx.session.user.id, updatedBy: ctx.session.user.id },
+        update: { ...data, updatedBy: ctx.session.user.id },
+      });
+    }),
+
+  updateBioWash: protectedProcedure
+    .input(z.object({
+      batchId: z.string(),
+      enzymeUsed: z.string().optional(),
+      fabricIn: z.number().optional(),
+      fabricOut: z.number().optional(),
+      status: batchStatusEnum.optional(),
+      remarks: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { batchId, ...data } = input;
+      return prisma.bioWashProcess.upsert({
+        where: { batchId },
+        create: { batchId, ...data, createdBy: ctx.session.user.id, updatedBy: ctx.session.user.id },
+        update: { ...data, updatedBy: ctx.session.user.id },
+      });
+    }),
+
   getBatchById: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
@@ -335,8 +393,11 @@ export const productionRouter = createTRPCRouter({
           knitting: true,
           greyFabric: true,
           dyeingProcess: true,
+          heatsetting: true,
+          centering: true,
           printingProcess: true,
           compacting: true,
+          bioWash: true,
           checking: true,
           cutting: true,
           stitching: true,
