@@ -138,14 +138,25 @@ export default function NewOrderPage() {
           <CardContent className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Customer *</Label>
-              <Select onValueChange={(v) => setValue("customerId", v)}>
-                <SelectTrigger><SelectValue placeholder="Select customer" /></SelectTrigger>
-                <SelectContent>
-                  {customers?.data.map((c: typeof customers.data[number]) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <Select value={watch("customerId")} onValueChange={(v) => setValue("customerId", v)}>
+                  <SelectTrigger className="w-full"><SelectValue placeholder="Select customer" /></SelectTrigger>
+                  <SelectContent>
+                    {customers?.data.map((c: typeof customers.data[number]) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setCustomerDialogOpen(true)}
+                  className="shrink-0"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
               {errors.customerId && <p className="text-xs text-red-500">{errors.customerId.message}</p>}
             </div>
 
@@ -312,6 +323,16 @@ export default function NewOrderPage() {
           <Button type="submit" loading={createOrder.isPending}>Create Order</Button>
         </div>
       </form>
+
+      <CustomerDialog
+        open={customerDialogOpen}
+        onOpenChange={setCustomerDialogOpen}
+        onSuccess={(newCustomer) => {
+          void utils.customers.list.invalidate().then(() => {
+            setValue("customerId", newCustomer.id);
+          });
+        }}
+      />
     </div>
   );
 }
