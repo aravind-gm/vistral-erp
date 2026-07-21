@@ -767,9 +767,9 @@ export default function OrderDetailPage() {
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="space-y-6">
         {/* Costing Inputs */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="w-full space-y-6">
           {/* Fabric Costing Section */}
           <Card className="border border-gray-200 shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-gray-100 bg-[#F9FAFB] rounded-t-xl">
@@ -1243,8 +1243,8 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Costing Summary Dashboard */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-4 space-y-6">
+        <div className="w-full">
+          <div className="space-y-6">
             <Card className="border-2 border-[#111827] shadow-lg rounded-xl overflow-hidden">
               <div className="bg-[#111827] px-6 py-4 text-white">
                 <div className="flex items-center gap-2">
@@ -1254,112 +1254,122 @@ export default function OrderDetailPage() {
                 <p className="text-xs text-gray-300 mt-1">Calculations updated automatically in real-time</p>
               </div>
 
-              <CardContent className="p-6 space-y-5 bg-white">
-                {/* Visual Dashboard blocks */}
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-gray-50 rounded-lg p-2.5 text-center border border-gray-100">
-                    <p className="text-[10px] text-gray-500 font-semibold uppercase">Fabrics</p>
-                    <p className="text-sm font-bold text-gray-800 mt-1">₹{calculatedCosting.totalFabricCostPerPc.toFixed(1)}</p>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-2.5 text-center border border-gray-100">
-                    <p className="text-[10px] text-gray-500 font-semibold uppercase">Accessories</p>
-                    <p className="text-sm font-bold text-gray-800 mt-1">₹{calculatedCosting.accessoriesTotal.toFixed(1)}</p>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-2.5 text-center border border-gray-100">
-                    <p className="text-[10px] text-gray-500 font-semibold uppercase">Packing</p>
-                    <p className="text-sm font-bold text-gray-800 mt-1">₹{calculatedCosting.packingTotal.toFixed(1)}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-3.5 pt-3 border-t border-gray-100">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-gray-500 font-medium">Stitching & CMT Subtotal</span>
-                    <span className="font-semibold text-gray-800">₹{calculatedCosting.cmtSubtotal.toFixed(2)}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-gray-500 font-medium">Est. Material Cost (Subtotal)</span>
-                    <span className="font-semibold text-gray-800">₹{calculatedCosting.subtotalPerPc.toFixed(2)}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center text-xs">
-                    <div className="flex items-center gap-1">
-                      <span className="text-gray-500 font-medium">Production Loss</span>
-                      <div className="flex items-center bg-red-50 text-red-600 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                        <Input
-                          type="number"
-                          step="any"
-                          value={costing.productionLossPercent ?? ""}
-                          onChange={(e) => updateCostingField("productionLossPercent", e.target.value)}
-                          className="w-8 h-4 text-[10px] border-0 p-0 text-center bg-transparent focus:ring-0 font-bold"
-                        />
-                        <span>%</span>
+              <CardContent className="p-6 bg-white">
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Left Column: Totals & Breakdowns */}
+                  <div className="space-y-5">
+                    {/* Visual Dashboard blocks */}
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="bg-gray-50 rounded-lg p-2.5 text-center border border-gray-100">
+                        <p className="text-[10px] text-gray-500 font-semibold uppercase">Fabrics</p>
+                        <p className="text-sm font-bold text-gray-800 mt-1">₹{calculatedCosting.totalFabricCostPerPc.toFixed(1)}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-2.5 text-center border border-gray-100">
+                        <p className="text-[10px] text-gray-500 font-semibold uppercase">Accessories</p>
+                        <p className="text-sm font-bold text-gray-800 mt-1">₹{calculatedCosting.accessoriesTotal.toFixed(1)}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-2.5 text-center border border-gray-100">
+                        <p className="text-[10px] text-gray-500 font-semibold uppercase">Packing</p>
+                        <p className="text-sm font-bold text-gray-800 mt-1">₹{calculatedCosting.packingTotal.toFixed(1)}</p>
                       </div>
                     </div>
-                    <span className="font-semibold text-gray-800">+ ₹{calculatedCosting.productionLossAmount.toFixed(2)}</span>
-                  </div>
 
-                  <div className="flex justify-between items-center text-xs pt-1 border-t border-dashed border-gray-200">
-                    <span className="text-gray-600 font-semibold">Total Cost per Pc</span>
-                    <span className="font-bold text-gray-900">₹{calculatedCosting.totalCostPerPc.toFixed(2)}</span>
-                  </div>
+                    <div className="space-y-3.5 pt-3 border-t border-gray-100">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-gray-500 font-medium">Stitching & CMT Subtotal</span>
+                        <span className="font-semibold text-gray-800">₹{calculatedCosting.cmtSubtotal.toFixed(2)}</span>
+                      </div>
 
-                  <div className="flex justify-between items-center text-xs">
-                    <div className="flex items-center gap-1">
-                      <span className="text-gray-500 font-medium">Profit Margin</span>
-                      <div className="flex items-center bg-green-50 text-green-600 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                        <Input
-                          type="number"
-                          step="any"
-                          value={costing.profitPercent ?? ""}
-                          onChange={(e) => updateCostingField("profitPercent", e.target.value)}
-                          className="w-8 h-4 text-[10px] border-0 p-0 text-center bg-transparent focus:ring-0 font-bold"
-                        />
-                        <span>%</span>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-gray-500 font-medium">Est. Material Cost (Subtotal)</span>
+                        <span className="font-semibold text-gray-800">₹{calculatedCosting.subtotalPerPc.toFixed(2)}</span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-xs">
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-500 font-medium">Production Loss</span>
+                          <div className="flex items-center bg-red-50 text-red-600 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                            <Input
+                              type="number"
+                              step="any"
+                              value={costing.productionLossPercent ?? ""}
+                              onChange={(e) => updateCostingField("productionLossPercent", e.target.value)}
+                              className="w-8 h-4 text-[10px] border-0 p-0 text-center bg-transparent focus:ring-0 font-bold"
+                            />
+                            <span>%</span>
+                          </div>
+                        </div>
+                        <span className="font-semibold text-gray-800">+ ₹{calculatedCosting.productionLossAmount.toFixed(2)}</span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-xs pt-1 border-t border-dashed border-gray-200">
+                        <span className="text-gray-600 font-semibold">Total Cost per Pc</span>
+                        <span className="font-bold text-gray-900">₹{calculatedCosting.totalCostPerPc.toFixed(2)}</span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-xs">
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-500 font-medium">Profit Margin</span>
+                          <div className="flex items-center bg-green-50 text-green-600 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                            <Input
+                              type="number"
+                              step="any"
+                              value={costing.profitPercent ?? ""}
+                              onChange={(e) => updateCostingField("profitPercent", e.target.value)}
+                              className="w-8 h-4 text-[10px] border-0 p-0 text-center bg-transparent focus:ring-0 font-bold"
+                            />
+                            <span>%</span>
+                          </div>
+                        </div>
+                        <span className="font-semibold text-green-600">+ ₹{calculatedCosting.marginAmount.toFixed(2)}</span>
                       </div>
                     </div>
-                    <span className="font-semibold text-green-600">+ ₹{calculatedCosting.marginAmount.toFixed(2)}</span>
+                  </div>
+
+                  {/* Right Column: Actions & Final Rate */}
+                  <div className="space-y-4">
+                    {/* Final Rate highlight block */}
+                    <div className="bg-[#F9FAFB] border border-gray-200 rounded-lg p-4 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">Target rate per pc</span>
+                        <span className="text-xl font-extrabold text-[#111827]">₹{Math.round(calculatedCosting.sellingPricePerPc)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs pt-2 border-t border-gray-100">
+                        <span className="text-gray-500 font-medium">Total Order Value ({orderQty} pcs)</span>
+                        <span className="font-bold text-gray-800">₹{Math.round(totalOrderValue).toLocaleString("en-IN")}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-gray-700">Technical Remarks / Notes</label>
+                      <Textarea
+                        rows={3}
+                        value={costing.remarks}
+                        onChange={(e) => updateCostingField("remarks", e.target.value)}
+                        className="text-xs"
+                        placeholder="E.g. Lycra Jersey fabric with 240 GSM, white color..."
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-2">
+                      <Button
+                        onClick={handleSaveCosting}
+                        loading={updateCosting.isPending}
+                        className="bg-[#111827] hover:bg-black text-white font-bold py-2.5 rounded-lg flex items-center justify-center gap-1 text-sm shadow-md transition-all duration-150"
+                      >
+                        <Save className="h-4 w-4" /> Save Costing
+                      </Button>
+
+                      <Button
+                        onClick={handlePrintPO}
+                        variant="outline"
+                        className="border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold py-2.5 rounded-lg flex items-center justify-center gap-1.5 text-sm shadow-sm transition-all duration-150"
+                      >
+                        <FileText className="h-4 w-4 text-red-600" /> Save PO PDF
+                      </Button>
+                    </div>
                   </div>
                 </div>
-
-                {/* Final Rate highlight block */}
-                <div className="bg-[#F9FAFB] border border-gray-200 rounded-lg p-4 mt-3 space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">Target rate per pc</span>
-                    <span className="text-xl font-extrabold text-[#111827]">₹{Math.round(calculatedCosting.sellingPricePerPc)}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs pt-2 border-t border-gray-100">
-                    <span className="text-gray-500 font-medium">Total Order Value ({orderQty} pcs)</span>
-                    <span className="font-bold text-gray-800">₹{Math.round(totalOrderValue).toLocaleString("en-IN")}</span>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-gray-700">Technical Remarks / Notes</label>
-                  <Textarea
-                    rows={3}
-                    value={costing.remarks}
-                    onChange={(e) => updateCostingField("remarks", e.target.value)}
-                    className="text-xs"
-                    placeholder="E.g. Lycra Jersey fabric with 240 GSM, white color..."
-                  />
-                </div>
-
-                <Button
-                  onClick={handleSaveCosting}
-                  loading={updateCosting.isPending}
-                  className="w-full bg-[#111827] hover:bg-black text-white font-bold py-2.5 rounded-lg flex items-center justify-center gap-1 text-sm shadow-md transition-all duration-150 mt-2"
-                >
-                  <Save className="h-4 w-4" /> Save Costing Sheet
-                </Button>
-
-                <Button
-                  onClick={handlePrintPO}
-                  variant="outline"
-                  className="w-full border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold py-2.5 rounded-lg flex items-center justify-center gap-1.5 text-sm shadow-sm transition-all duration-150 mt-2"
-                >
-                  <FileText className="h-4 w-4 text-red-600" /> Save PO & Requirements as PDF
-                </Button>
               </CardContent>
             </Card>
           </div>
