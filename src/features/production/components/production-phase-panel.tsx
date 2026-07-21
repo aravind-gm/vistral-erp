@@ -500,6 +500,246 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
 
   const fabrics = costingDetails?.fabrics || [];
 
+  const renderComparison = () => {
+    const stage = config.title;
+    const batchQty = selectedBatch?.quantity || 1;
+    if (!selectedBatch) return null;
+    
+    switch (stage) {
+      case "Knitting": {
+        const knitVal = selectedBatch.knitting || {};
+        const fabricTarget = fabrics[0] || {};
+        const targetCons = parseFloat(fabricTarget.consumption) || 0;
+        const lossPercent = parseFloat(fabricTarget.lossPercent) || 0;
+        
+        const expectedYarn = targetCons * batchQty * (1 + lossPercent / 100);
+        const expectedFabric = targetCons * batchQty;
+        
+        return (
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card className="bg-gray-50 border border-gray-150 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase">
+                  <Target className="h-4 w-4 text-blue-500" />
+                  Yarn Issued Qty
+                </div>
+                <div className="mt-2 flex justify-between items-baseline">
+                  <div>
+                    <p className="text-xl font-extrabold text-gray-900">{knitVal.yarnIssued ? `${Number(knitVal.yarnIssued).toFixed(2)} Kg` : "-"}</p>
+                    <p className="text-xs text-gray-400">Actual yarn issued</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-blue-600">{expectedYarn.toFixed(2)} Kg</p>
+                    <p className="text-[10px] text-gray-400">Target (w/ loss)</p>
+                  </div>
+                </div>
+                {knitVal.yarnIssued && (
+                  <div className="mt-3 pt-2 border-t border-gray-200">
+                    <div className="flex justify-between text-xs">
+                      <span>Variance:</span>
+                      <span className={`font-bold ${Number(knitVal.yarnIssued) > expectedYarn ? 'text-red-500' : 'text-green-500'}`}>
+                        {(Number(knitVal.yarnIssued) - expectedYarn) > 0 ? '+' : ''}{(Number(knitVal.yarnIssued) - expectedYarn).toFixed(2)} Kg ({(((Number(knitVal.yarnIssued) - expectedYarn) / expectedYarn) * 100).toFixed(1)}%)
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-50 border border-gray-150 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase">
+                  <Scale className="h-4 w-4 text-emerald-500" />
+                  Fabric Produced
+                </div>
+                <div className="mt-2 flex justify-between items-baseline">
+                  <div>
+                    <p className="text-xl font-extrabold text-gray-900">{knitVal.fabricProduced ? `${Number(knitVal.fabricProduced).toFixed(2)} Kg` : "-"}</p>
+                    <p className="text-xs text-gray-400">Actual fabric output</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-emerald-600">{expectedFabric.toFixed(2)} Kg</p>
+                    <p className="text-[10px] text-gray-400">Target output</p>
+                  </div>
+                </div>
+                {knitVal.fabricProduced && (
+                  <div className="mt-3 pt-2 border-t border-gray-200">
+                    <div className="flex justify-between text-xs">
+                      <span>Efficiency:</span>
+                      <span className={`font-bold ${Number(knitVal.fabricProduced) >= expectedFabric ? 'text-green-500' : 'text-amber-500'}`}>
+                        {((Number(knitVal.fabricProduced) / expectedFabric) * 100).toFixed(1)}% of target
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-50 border border-gray-150 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase">
+                  <Percent className="h-4 w-4 text-red-500" />
+                  Knitting Wastage
+                </div>
+                <div className="mt-2 flex justify-between items-baseline">
+                  <div>
+                    <p className="text-xl font-extrabold text-gray-900">{knitVal.wastage ? `${Number(knitVal.wastage).toFixed(2)} Kg` : "-"}</p>
+                    <p className="text-xs text-gray-400">Actual wastage</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-red-600">{lossPercent}%</p>
+                    <p className="text-[10px] text-gray-400">Allowed loss</p>
+                  </div>
+                </div>
+                {knitVal.yarnIssued && knitVal.wastage && (
+                  <div className="mt-3 pt-2 border-t border-gray-200">
+                    <div className="flex justify-between text-xs">
+                      <span>Wastage %:</span>
+                      <span className={`font-bold ${((Number(knitVal.wastage)/Number(knitVal.yarnIssued))*105) > lossPercent ? 'text-red-500' : 'text-green-500'}`}>
+                        {((Number(knitVal.wastage) / Number(knitVal.yarnIssued)) * 100).toFixed(2)}%
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        );
+      }
+      case "Dyeing": {
+        const dyeingVal = selectedBatch.dyeingProcess || {};
+        const fabricTarget = fabrics[0] || {};
+        const targetDyeingRate = parseFloat(fabricTarget.dyeingRate) || 0;
+        
+        return (
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="bg-gray-50 border border-gray-150 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase">
+                  <Target className="h-4 w-4 text-purple-500" />
+                  Dyeing Cost Per Kg
+                </div>
+                <div className="mt-2 flex justify-between items-baseline">
+                  <div>
+                    <p className="text-xl font-extrabold text-gray-900">{dyeingVal.costPerKg ? `₹${Number(dyeingVal.costPerKg).toFixed(2)}` : "-"}</p>
+                    <p className="text-xs text-gray-400">Actual dyeing cost/Kg</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-purple-600">₹{targetDyeingRate.toFixed(2)}</p>
+                    <p className="text-[10px] text-gray-400">Budget target/Kg</p>
+                  </div>
+                </div>
+                {dyeingVal.costPerKg && (
+                  <div className="mt-3 pt-2 border-t border-gray-200">
+                    <div className="flex justify-between text-xs">
+                      <span>Cost Variance:</span>
+                      <span className={`font-bold ${Number(dyeingVal.costPerKg) > targetDyeingRate ? 'text-red-500' : 'text-green-500'}`}>
+                        {Number(dyeingVal.costPerKg) > targetDyeingRate ? '+' : ''}{(Number(dyeingVal.costPerKg) - targetDyeingRate).toFixed(2)} ({( ((Number(dyeingVal.costPerKg) - targetDyeingRate) / targetDyeingRate) * 100 ).toFixed(1)}%)
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-50 border border-gray-150 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase">
+                  <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                  Color Routing
+                </div>
+                <div className="mt-2 flex justify-between items-baseline">
+                  <div>
+                    <p className="text-lg font-bold text-gray-900">{dyeingVal.color || "-"}</p>
+                    <p className="text-xs text-gray-400">Actual Color (Shade: {dyeingVal.shade || "-"})</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-semibold text-gray-700">Order Colors:</p>
+                    <div className="flex flex-wrap gap-1 mt-1 justify-end">
+                      {selectedBatch.order?.orderDetails.map((d: any) => (
+                        <Badge key={d.id} variant="outline" className="text-[9px] px-1.5 py-0">
+                          {d.color}
+                        </Badge>
+                      )) || <span className="text-[10px] text-gray-400">-</span>}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      }
+      case "Stitching": {
+        const stitchVal = selectedBatch.stitching || {};
+        const targetCmt = parseFloat(costingDetails?.cmt) || 0;
+        
+        return (
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="bg-gray-50 border border-gray-150 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase">
+                  <Target className="h-4 w-4 text-indigo-500" />
+                  Stitching Rate Per Pc
+                </div>
+                <div className="mt-2 flex justify-between items-baseline">
+                  <div>
+                    <p className="text-xl font-extrabold text-gray-900">{stitchVal.costPerPc ? `₹${Number(stitchVal.costPerPc).toFixed(2)}` : "-"}</p>
+                    <p className="text-xs text-gray-400">Actual stitching rate/pc</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-indigo-600">₹{targetCmt.toFixed(2)}</p>
+                    <p className="text-[10px] text-gray-400">Budgeted CMT/pc</p>
+                  </div>
+                </div>
+                {stitchVal.costPerPc && (
+                  <div className="mt-3 pt-2 border-t border-gray-200">
+                    <div className="flex justify-between text-xs">
+                      <span>Cost Variance:</span>
+                      <span className={`font-bold ${Number(stitchVal.costPerPc) > targetCmt ? 'text-red-500' : 'text-green-500'}`}>
+                        {Number(stitchVal.costPerPc) > targetCmt ? '+' : ''}{(Number(stitchVal.costPerPc) - targetCmt).toFixed(2)} ({( ((Number(stitchVal.costPerPc) - targetCmt) / targetCmt) * 100 ).toFixed(1)}%)
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-50 border border-gray-150 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase">
+                  <Scale className="h-4 w-4 text-emerald-500" />
+                  Quantity Progress
+                </div>
+                <div className="mt-2 flex justify-between items-baseline">
+                  <div>
+                    <p className="text-xl font-extrabold text-gray-900">{stitchVal.stitchedQty ? `${stitchVal.stitchedQty} Pcs` : "-"}</p>
+                    <p className="text-xs text-gray-400">Actual Stitched Qty</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-emerald-600">{batchQty} Pcs</p>
+                    <p className="text-[10px] text-gray-400">Batch Quantity</p>
+                  </div>
+                </div>
+                {stitchVal.stitchedQty && (
+                  <div className="mt-3 pt-2 border-t border-gray-200">
+                    <div className="flex justify-between text-xs">
+                      <span>Completion:</span>
+                      <span className="font-bold text-gray-700">
+                        {((stitchVal.stitchedQty / batchQty) * 100).toFixed(1)}% Completed
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        );
+      }
+      default:
+        return null;
+    }
+  };
+
   useEffect(() => {
     if (selectedBatch) {
       const status = config.getStatus(selectedBatch);
