@@ -41,7 +41,7 @@ type FormValues = z.infer<typeof schema>;
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
+  onSuccess?: (data: any) => void;
 }
 
 export function CustomerDialog({ open, onOpenChange, onSuccess }: Props) {
@@ -55,11 +55,11 @@ export function CustomerDialog({ open, onOpenChange, onSuccess }: Props) {
   });
 
   const createMutation = api.customers.create.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Customer created successfully");
       form.reset();
       onOpenChange(false);
-      onSuccess?.();
+      onSuccess?.(data);
     },
     onError: (err) => {
       toast.error(err.message || "Failed to create customer");

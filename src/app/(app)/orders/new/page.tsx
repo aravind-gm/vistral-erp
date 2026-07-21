@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 import type { Resolver } from "react-hook-form";
+import { CustomerDialog } from "@/features/customers/components/customer-dialog";
 
 const detailSchema = z.object({
   styleNo: z.string().optional(),
@@ -50,6 +52,8 @@ type OrderForm = z.infer<typeof orderSchema>;
 
 export default function NewOrderPage() {
   const router = useRouter();
+  const utils = api.useUtils();
+  const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const { data: customers } = api.customers.list.useQuery({ page: 1, limit: 100 });
 
   const { register, handleSubmit, setValue, watch, control, formState: { errors } } = useForm<OrderForm>({
