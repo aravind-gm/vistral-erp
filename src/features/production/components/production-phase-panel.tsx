@@ -14,7 +14,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, CheckCircle2, Clock3, TriangleAlert, Search } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock3, TriangleAlert, Search, Percent, TrendingUp, Target, Scale, ShieldCheck } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ComponentType, ReactNode, SVGProps } from "react";
 import { formatDate } from "@/features/dashboard/utils/formatters";
 import { Input } from "@/components/ui/input";

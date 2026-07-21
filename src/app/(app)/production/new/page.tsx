@@ -24,7 +24,7 @@ type BatchForm = z.infer<typeof batchSchema>;
 
 export default function NewProductionBatchPage() {
   const router = useRouter();
-  const { data: orders } = api.orders.list.useQuery({ page: 1, limit: 100, status: "CONFIRMED" });
+  const { data: orders } = api.orders.list.useQuery({ page: 1, limit: 100, status: "CONFIRMED,IN_PRODUCTION" });
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<BatchForm>({
     resolver: zodResolver(batchSchema),

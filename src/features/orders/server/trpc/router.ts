@@ -60,7 +60,11 @@ export const ordersRouter = createTRPCRouter({
 
     const where = {
       deletedAt: null,
-      ...(status && { status: status as never }),
+      ...(status && {
+        status: status.includes(",")
+          ? { in: status.split(",") as any }
+          : (status as any),
+      }),
       ...(customerId && { customerId }),
       ...(search && {
         OR: [

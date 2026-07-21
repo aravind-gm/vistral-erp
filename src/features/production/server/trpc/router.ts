@@ -61,7 +61,7 @@ export const productionRouter = createTRPCRouter({
       const year = new Date().getFullYear().toString().slice(-2);
       const batchNo = `BATCH-${year}-${String(count + 1).padStart(5, "0")}`;
 
-      return prisma.productionBatch.create({
+      const batch = await prisma.productionBatch.create({
         data: {
           ...input,
           batchNo,
@@ -69,6 +69,16 @@ export const productionRouter = createTRPCRouter({
           updatedBy: ctx.session.user.id,
         },
       });
+
+      await prisma.order.update({
+        where: { id: input.orderId },
+        data: {
+          status: "IN_PRODUCTION",
+          updatedBy: ctx.session.user.id,
+        },
+      });
+
+      return batch;
     }),
 
   updateKnitting: protectedProcedure
@@ -315,7 +325,12 @@ export const productionRouter = createTRPCRouter({
         where: { id: input.id, deletedAt: null },
         include: {
           order: {
-            include: { customer: true, orderDetails: { include: { fabricType: true } } },
+            include: {
+              customer: true,
+              orderDetails: { include: { fabricType: true } },
+              orderCosting: true,
+              yarnPlans: { include: { yarnType: true } },
+            },
           },
           knitting: true,
           greyFabric: true,
