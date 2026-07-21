@@ -50,19 +50,14 @@ const navigation: NavItem[] = [
     ],
   },
   {
-    title: "Merchandising",
-    icon: Shirt,
-    children: [
-      { title: "Yarn Planning", href: "/yarn/planning", icon: Layers },
-      { title: "Yarn Procurement", href: "/yarn/procurement", icon: Package },
-    ],
+    title: "Yarn Procurement",
+    href: "/yarn/procurement",
+    icon: Package,
   },
   {
-    title: "Store",
-    icon: Warehouse,
-    children: [
-      { title: "Yarn Inventory", href: "/yarn/inventory", icon: Package },
-    ],
+    title: "Yarn Types",
+    href: "/settings/yarn-types",
+    icon: Layers,
   },
   {
     title: "Production",
@@ -114,7 +109,6 @@ const navigation: NavItem[] = [
       { title: "Company", href: "/settings/company", icon: Building2 },
       { title: "Users", href: "/settings/users", icon: Users },
       { title: "Roles", href: "/settings/roles", icon: UserCheck },
-      { title: "Yarn Types", href: "/settings/yarn-types", icon: Package },
     ],
   },
 ];
