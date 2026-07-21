@@ -926,199 +926,424 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
               <Skeleton className="h-24 w-full" />
             </div>
           ) : selectedBatch ? (
-            <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Batch snapshot</CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">Order</p>
-                    <p className="mt-1 font-medium text-[#111827]">{selectedBatch.order?.orderNo ?? "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">Customer</p>
-                    <p className="mt-1 font-medium text-[#111827]">{selectedBatch.order?.customer?.name ?? "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">Quantity</p>
-                    <p className="mt-1 font-medium text-[#111827]">{selectedBatch.quantity}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">Current stage status</p>
-                    <Badge className="mt-1" variant={STATUS_VARIANT[config.getStatus(selectedBatch)] ?? "secondary"}>
-                      {config.getStatus(selectedBatch)}
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">Created</p>
-                    <p className="mt-1 font-medium text-[#111827]">{formatDate(selectedBatch.createdAt)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">Updated</p>
-                    <p className="mt-1 font-medium text-[#111827]">{selectedBatch.updatedAt ? formatDate(selectedBatch.updatedAt) : "-"}</p>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">Batch remarks</p>
-                    <p className="mt-1 text-sm leading-6 text-[#374151]">{selectedBatch.remarks ?? "-"}</p>
-                  </div>
-                </CardContent>
-              </Card>
+            <Tabs defaultValue="process" className="w-full">
+              <TabsList className="grid grid-cols-2 mb-4 w-96">
+                <TabsTrigger value="process">Process & Checklist</TabsTrigger>
+                <TabsTrigger value="targets">Order Costing & Yarn Targets</TabsTrigger>
+              </TabsList>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Stage checklist</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {config.workflowSteps.map((step, index) => (
-                    <label key={step} className="flex gap-3 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 cursor-pointer items-start hover:bg-gray-50">
-                      <input
-                        type="checkbox"
-                        checked={checkedItems[index] ?? false}
-                        onChange={(e) => {
-                          const updated = [...checkedItems];
-                          updated[index] = e.target.checked;
-                          setCheckedItems(updated);
-                        }}
-                        className="mt-1 h-4 w-4 rounded border-gray-300 text-[#111827] focus:ring-[#111827]"
-                      />
+              <TabsContent value="process" className="space-y-4">
+                <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Batch snapshot</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <p className={`text-sm font-medium text-[#111827] ${checkedItems[index] ? 'line-through text-gray-400' : ''}`}>{step}</p>
-                        <p className="text-xs text-[#6B7280]">Track this before handing over the batch.</p>
+                        <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">Order</p>
+                        <p className="mt-1 font-medium text-[#111827]">{selectedBatch.order?.orderNo ?? "-"}</p>
                       </div>
-                    </label>
-                  ))}
-                </CardContent>
-              </Card>
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">Customer</p>
+                        <p className="mt-1 font-medium text-[#111827]">{selectedBatch.order?.customer?.name ?? "-"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">Quantity</p>
+                        <p className="mt-1 font-medium text-[#111827]">{selectedBatch.quantity}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">Current stage status</p>
+                        <Badge className="mt-1" variant={STATUS_VARIANT[config.getStatus(selectedBatch)] ?? "secondary"}>
+                          {config.getStatus(selectedBatch)}
+                        </Badge>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">Created</p>
+                        <p className="mt-1 font-medium text-[#111827]">{formatDate(selectedBatch.createdAt)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">Updated</p>
+                        <p className="mt-1 font-medium text-[#111827]">{selectedBatch.updatedAt ? formatDate(selectedBatch.updatedAt) : "-"}</p>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">Batch remarks</p>
+                        <p className="mt-1 text-sm leading-6 text-[#374151]">{selectedBatch.remarks ?? "-"}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
 
-              <Card className="lg:col-span-2">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                  <CardTitle>{config.title} process details</CardTitle>
-                  {!isEditing ? (
-                    <Button variant="outline" size="sm" onClick={startEditing}>
-                      Edit details
-                    </Button>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
-                        Cancel
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        onClick={handleSave} 
-                        loading={
-                          updateKnitting.isPending ||
-                          updateGreyFabric.isPending ||
-                          updateDyeing.isPending ||
-                          updatePrinting.isPending ||
-                          updateCompacting.isPending ||
-                          updateChecking.isPending ||
-                          updateCutting.isPending ||
-                          updateStitching.isPending ||
-                          updatePacking.isPending ||
-                          updateDispatch.isPending
-                        }
-                      >
-                        Save changes
-                      </Button>
-                    </div>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  {!isEditing ? (
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                      {config.details.map((detail) => {
-                        const value = detail.value(selectedBatch);
-                        return (
-                          <div key={detail.label} className="rounded-xl border border-[#E5E7EB] bg-[#FAFAFA] p-4">
-                            <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">{detail.label}</p>
-                            <div className="mt-2 text-sm font-medium text-[#111827]">
-                              {typeof value === "string" ? formatDetailValue(value) : value}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      {config.title !== "Dispatch" && (
-                        <div className="grid gap-2">
-                          <Label htmlFor="stage-status-select">
-                            {config.title === "Grey Fabric" ? "Inspection Status" : "Stage Status"}
-                          </Label>
-                          <Select
-                            value={formData[config.title === "Grey Fabric" ? "inspectionStatus" : "status"] ?? "PENDING"}
-                            onValueChange={(val) => {
-                              setFormData({
-                                ...formData,
-                                [config.title === "Grey Fabric" ? "inspectionStatus" : "status"]: val
-                              });
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Stage checklist</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {config.workflowSteps.map((step, index) => (
+                        <label key={step} className="flex gap-3 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 cursor-pointer items-start hover:bg-gray-50">
+                          <input
+                            type="checkbox"
+                            checked={checkedItems[index] ?? false}
+                            onChange={(e) => {
+                              const updated = [...checkedItems];
+                              updated[index] = e.target.checked;
+                              setCheckedItems(updated);
                             }}
+                            className="mt-1 h-4 w-4 rounded border-gray-300 text-[#111827] focus:ring-[#111827]"
+                          />
+                          <div>
+                            <p className={`text-sm font-medium text-[#111827] ${checkedItems[index] ? 'line-through text-gray-400' : ''}`}>{step}</p>
+                            <p className="text-xs text-[#6B7280]">Track this before handing over the batch.</p>
+                          </div>
+                        </label>
+                      ))}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="lg:col-span-2">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                      <CardTitle>{config.title} process details</CardTitle>
+                      {!isEditing ? (
+                        <Button variant="outline" size="sm" onClick={startEditing}>
+                          Edit details
+                        </Button>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
+                            Cancel
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            onClick={handleSave} 
+                            loading={
+                              updateKnitting.isPending ||
+                              updateGreyFabric.isPending ||
+                              updateDyeing.isPending ||
+                              updatePrinting.isPending ||
+                              updateCompacting.isPending ||
+                              updateChecking.isPending ||
+                              updateCutting.isPending ||
+                              updateStitching.isPending ||
+                              updatePacking.isPending ||
+                              updateDispatch.isPending
+                            }
                           >
-                            <SelectTrigger id="stage-status-select">
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {config.title === "Grey Fabric" ? (
-                                <>
-                                  <SelectItem value="PENDING">PENDING</SelectItem>
-                                  <SelectItem value="PASSED">PASSED</SelectItem>
-                                  <SelectItem value="FAILED">FAILED</SelectItem>
-                                </>
-                              ) : (
-                                <>
-                                  <SelectItem value="PENDING">PENDING</SelectItem>
-                                  <SelectItem value="IN_PROGRESS">IN PROGRESS</SelectItem>
-                                  <SelectItem value="COMPLETED">COMPLETED</SelectItem>
-                                  <SelectItem value="ON_HOLD">ON HOLD</SelectItem>
-                                </>
-                              )}
-                            </SelectContent>
-                          </Select>
+                            Save changes
+                          </Button>
                         </div>
                       )}
-                      
-                      <div className="grid gap-4 md:grid-cols-2">
-                        {getFieldsForStage(config.title).map((field) => (
-                          <div key={field.name} className={`grid gap-2 ${field.type === "textarea" ? "md:col-span-2" : ""}`}>
-                            <Label htmlFor={`field-${field.name}`}>{field.label}</Label>
-                            {field.type === "textarea" ? (
-                              <Textarea
-                                id={`field-${field.name}`}
-                                value={formData[field.name] ?? ""}
-                                onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
-                                placeholder={`Enter ${field.label.toLowerCase()}...`}
-                              />
-                            ) : field.type === "boolean" ? (
+                    </CardHeader>
+                    <CardContent>
+                      {!isEditing ? (
+                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                          {config.details.map((detail) => {
+                            const value = detail.value(selectedBatch);
+                            return (
+                              <div key={detail.label} className="rounded-xl border border-[#E5E7EB] bg-[#FAFAFA] p-4">
+                                <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">{detail.label}</p>
+                                <div className="mt-2 text-sm font-medium text-[#111827]">
+                                  {typeof value === "string" ? formatDetailValue(value) : value}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="space-y-6">
+                          {config.title !== "Dispatch" && (
+                            <div className="grid gap-2">
+                              <Label htmlFor="stage-status-select">
+                                {config.title === "Grey Fabric" ? "Inspection Status" : "Stage Status"}
+                              </Label>
                               <Select
-                                value={formData[field.name] ? "true" : "false"}
-                                onValueChange={(val) => setFormData({ ...formData, [field.name]: val === "true" })}
+                                value={formData[config.title === "Grey Fabric" ? "inspectionStatus" : "status"] ?? "PENDING"}
+                                onValueChange={(val) => {
+                                  setFormData({
+                                    ...formData,
+                                    [config.title === "Grey Fabric" ? "inspectionStatus" : "status"]: val
+                                  });
+                                }}
                               >
-                                <SelectTrigger id={`field-${field.name}`}>
-                                  <SelectValue />
+                                <SelectTrigger id="stage-status-select">
+                                  <SelectValue placeholder="Select status" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="true">Yes / In-house</SelectItem>
-                                  <SelectItem value="false">No / Subcontract</SelectItem>
+                                  {config.title === "Grey Fabric" ? (
+                                    <>
+                                      <SelectItem value="PENDING">PENDING</SelectItem>
+                                      <SelectItem value="PASSED">PASSED</SelectItem>
+                                      <SelectItem value="FAILED">FAILED</SelectItem>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <SelectItem value="PENDING">PENDING</SelectItem>
+                                      <SelectItem value="IN_PROGRESS">IN PROGRESS</SelectItem>
+                                      <SelectItem value="COMPLETED">COMPLETED</SelectItem>
+                                      <SelectItem value="ON_HOLD">ON HOLD</SelectItem>
+                                    </>
+                                  )}
                                 </SelectContent>
                               </Select>
-                            ) : (
-                              <Input
-                                id={`field-${field.name}`}
-                                type={field.type}
-                                value={formData[field.name] ?? ""}
-                                onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
-                                placeholder={`Enter ${field.label.toLowerCase()}...`}
-                              />
-                            )}
+                            </div>
+                          )}
+                          
+                          <div className="grid gap-4 md:grid-cols-2">
+                            {getFieldsForStage(config.title).map((field) => (
+                              <div key={field.name} className={`grid gap-2 ${field.type === "textarea" ? "md:col-span-2" : ""}`}>
+                                <Label htmlFor={`field-${field.name}`}>{field.label}</Label>
+                                {field.type === "textarea" ? (
+                                  <Textarea
+                                    id={`field-${field.name}`}
+                                    value={formData[field.name] ?? ""}
+                                    onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                                    placeholder={`Enter ${field.label.toLowerCase()}...`}
+                                  />
+                                ) : field.type === "boolean" ? (
+                                  <Select
+                                    value={formData[field.name] ? "true" : "false"}
+                                    onValueChange={(val) => setFormData({ ...formData, [field.name]: val === "true" })}
+                                  >
+                                    <SelectTrigger id={`field-${field.name}`}>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="true">Yes / In-house</SelectItem>
+                                      <SelectItem value="false">No / Subcontract</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                ) : (
+                                  <Input
+                                    id={`field-${field.name}`}
+                                    type={field.type}
+                                    value={formData[field.name] ?? ""}
+                                    onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                                    placeholder={`Enter ${field.label.toLowerCase()}...`}
+                                  />
+                                )}
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="targets" className="space-y-6 pt-2">
+                {/* Live Costing Targets vs Actual Production Comparison */}
+                {renderComparison() && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                      <TrendingUp className="h-4 w-4 text-emerald-500" />
+                      Live Actuals vs Budget Targets
+                    </h3>
+                    {renderComparison()}
+                  </div>
+                )}
+
+                {/* Approved Order Costing Targets */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Fabrics Costing Sheet */}
+                  <Card className="md:col-span-2 border border-gray-200">
+                    <CardHeader className="py-3 bg-gray-50 border-b border-gray-150">
+                      <CardTitle className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                        <Percent className="h-4.5 w-4.5 text-blue-600" />
+                        Budgeted Fabric Costing Targets (Per Kg)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      {fabrics.length === 0 ? (
+                        <div className="p-6 text-center text-xs text-gray-400">
+                          No fabric costing details found for this order.
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs text-left">
+                            <thead>
+                              <tr className="bg-gray-50/50 border-b border-gray-200 text-gray-600 font-semibold uppercase">
+                                <th className="p-3">Fabric Name</th>
+                                <th className="p-3 text-center">Yarn Rate</th>
+                                <th className="p-3 text-center">Knit Rate</th>
+                                <th className="p-3 text-center">Dye Rate</th>
+                                <th className="p-3 text-center">Compact</th>
+                                <th className="p-3 text-center">Loss %</th>
+                                <th className="p-3 text-center">Consumption</th>
+                                <th className="p-3 text-center">Total/Kg</th>
+                                <th className="p-3 text-right">Cost/Pc</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-150">
+                              {fabrics.map((f: any, idx: number) => {
+                                const yarn = parseFloat(f.yarnRate) || 0;
+                                const knitting = parseFloat(f.knittingRate) || 0;
+                                const dyeing = parseFloat(f.dyeingRate) || 0;
+                                const compacting = parseFloat(f.compactingRate) || 0;
+                                const loss = parseFloat(f.lossPercent) || 0;
+                                const cons = parseFloat(f.consumption) || 0;
+                                const totalRatePerKg = (yarn + knitting + dyeing + compacting) * (1 + loss / 100);
+                                const totalCostPerPc = totalRatePerKg * cons;
+                                
+                                return (
+                                  <tr key={idx} className="hover:bg-gray-50/30">
+                                    <td className="p-3 font-semibold text-gray-800">{f.name}</td>
+                                    <td className="p-3 text-center">₹{yarn.toFixed(2)}</td>
+                                    <td className="p-3 text-center">₹{knitting.toFixed(2)}</td>
+                                    <td className="p-3 text-center">₹{dyeing.toFixed(2)}</td>
+                                    <td className="p-3 text-center">₹{compacting.toFixed(2)}</td>
+                                    <td className="p-3 text-center">{loss}%</td>
+                                    <td className="p-3 text-center font-medium">{cons.toFixed(3)} Kg</td>
+                                    <td className="p-3 text-center font-semibold text-gray-700">₹{totalRatePerKg.toFixed(2)}</td>
+                                    <td className="p-3 text-right font-bold text-gray-900">₹{totalCostPerPc.toFixed(2)}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* CMT Stitching & Packing Budgets */}
+                  <Card className="border border-gray-200">
+                    <CardHeader className="py-3 bg-gray-50 border-b border-gray-150">
+                      <CardTitle className="text-sm font-bold text-gray-800">Stitching (CMT) & Other Costs</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 space-y-3.5">
+                      <div className="grid grid-cols-2 gap-3 text-xs border-b pb-3">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Cutting Cost:</span>
+                          <span className="font-semibold text-gray-800">₹{parseFloat(costingDetails?.cmt_cutting || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Singer (Sewing):</span>
+                          <span className="font-semibold text-gray-800">₹{parseFloat(costingDetails?.cmt_singer || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Power Table:</span>
+                          <span className="font-semibold text-gray-800">₹{parseFloat(costingDetails?.cmt_powerTable || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Checking Cost:</span>
+                          <span className="font-semibold text-gray-800">₹{parseFloat(costingDetails?.cmt_checking || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Ironing & Packing:</span>
+                          <span className="font-semibold text-gray-800">₹{parseFloat(costingDetails?.cmt_ironingPacking || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between border-t pt-1.5 mt-1.5 font-bold">
+                          <span className="text-gray-700">Total Stitching/CMT:</span>
+                          <span className="text-gray-900">₹{parseFloat(costingDetails?.cmt || 0).toFixed(2)}</span>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+
+                      <div className="grid grid-cols-2 gap-3 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Elastic Cost:</span>
+                          <span className="font-semibold text-gray-800">₹{parseFloat(costingDetails?.elastic || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Rope Cost:</span>
+                          <span className="font-semibold text-gray-800">₹{parseFloat(costingDetails?.rope || 0).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Accessories & Packing Trims targets */}
+                  <Card className="border border-gray-200">
+                    <CardHeader className="py-3 bg-gray-50 border-b border-gray-150">
+                      <CardTitle className="text-sm font-bold text-gray-800">Trims & Packing Budget</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 space-y-3.5">
+                      <div className="grid grid-cols-2 gap-3 text-xs border-b pb-3">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Main Label:</span>
+                          <span className="font-semibold text-gray-800">₹{parseFloat(costingDetails?.accessories?.mainLabel || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Washcare Label:</span>
+                          <span className="font-semibold text-gray-800">₹{parseFloat(costingDetails?.accessories?.washcareLabel || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Hang Tag:</span>
+                          <span className="font-semibold text-gray-800">₹{parseFloat(costingDetails?.accessories?.tag || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Thread Cost:</span>
+                          <span className="font-semibold text-gray-800">₹{parseFloat(costingDetails?.accessories?.thread || 0).toFixed(2)}</span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Poly Bag:</span>
+                          <span className="font-semibold text-gray-800">₹{parseFloat(costingDetails?.packing?.polyBag || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Carton Box:</span>
+                          <span className="font-semibold text-gray-800">₹{parseFloat(costingDetails?.packing?.cartonBox || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Transport:</span>
+                          <span className="font-semibold text-gray-800">₹{parseFloat(costingDetails?.packing?.transports || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Courier/Other:</span>
+                          <span className="font-semibold text-gray-800">₹{parseFloat(costingDetails?.packing?.courier || 0).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Approved Yarn Planning Allocations */}
+                  <Card className="md:col-span-2 border border-gray-200">
+                    <CardHeader className="py-3 bg-gray-50 border-b border-gray-150">
+                      <CardTitle className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                        <Target className="h-4.5 w-4.5 text-indigo-600" />
+                        Approved Yarn Planning Requirements
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      {yarnPlans.length === 0 ? (
+                        <div className="p-6 text-center text-xs text-gray-400">
+                          No yarn planning details found for this order. Yarn planning can be set up in the order costing page.
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs text-left">
+                            <thead>
+                              <tr className="bg-gray-50/50 border-b border-gray-200 text-gray-600 font-semibold uppercase">
+                                <th className="p-3">Yarn Count/Composition</th>
+                                <th className="p-3 text-center">Required Qty</th>
+                                <th className="p-3 text-center">Wastage %</th>
+                                <th className="p-3 text-center">Total Required Qty</th>
+                                <th className="p-3 text-center">Procured Qty</th>
+                                <th className="p-3">Remarks</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-150">
+                              {yarnPlans.map((plan: any) => (
+                                <tr key={plan.id} className="hover:bg-gray-50/30">
+                                  <td className="p-3 font-semibold text-gray-800">
+                                    {plan.yarnType?.name} {plan.yarnType?.count ? `(${plan.yarnType?.count})` : ""}
+                                    {plan.yarnType?.composition ? ` - ${plan.yarnType?.composition}` : ""}
+                                  </td>
+                                  <td className="p-3 text-center">{Number(plan.requiredQty).toFixed(2)} Kg</td>
+                                  <td className="p-3 text-center">{Number(plan.wastagePercent).toFixed(1)}%</td>
+                                  <td className="p-3 text-center font-bold text-gray-900">{Number(plan.totalRequired).toFixed(2)} Kg</td>
+                                  <td className="p-3 text-center font-medium text-emerald-600">{Number(plan.procuredQty).toFixed(2)} Kg</td>
+                                  <td className="p-3 text-gray-500 max-w-[200px] truncate" title={plan.remarks || ""}>{plan.remarks || "-"}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+            </Tabs>
           ) : (
             <div className="rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-6 text-sm text-[#6B7280]">
               This batch could not be loaded.
