@@ -226,7 +226,7 @@ export default function Page() {
           <p className="text-sm text-[#6B7280] mt-1">Track and manage spinning mill purchase orders (POs) and inventory issues.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => router.push("/yarn") }>
+          <Button variant="outline" onClick={() => router.push("/dashboard") }>
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
           </Button>
           <Button onClick={() => router.push("/yarn/procurement/new") } className="bg-[#111827] hover:bg-black text-white">
