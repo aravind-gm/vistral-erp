@@ -478,6 +478,28 @@ export function ProductionPhasePanel({ config }: { config: ProductionPhaseConfig
 
   const selectedBatch = selectedBatchQuery.data as any;
 
+  const { orderCosting, yarnPlans } = useMemo(() => {
+    if (!selectedBatch?.order) return { orderCosting: null, yarnPlans: [] };
+    return {
+      orderCosting: selectedBatch.order.orderCosting,
+      yarnPlans: selectedBatch.order.yarnPlans || [],
+    };
+  }, [selectedBatch]);
+
+  const costingDetails = useMemo(() => {
+    if (!orderCosting?.costingDetails) return null;
+    try {
+      return typeof orderCosting.costingDetails === "string"
+        ? JSON.parse(orderCosting.costingDetails)
+        : orderCosting.costingDetails;
+    } catch (e) {
+      console.error("Error parsing costingDetails", e);
+      return null;
+    }
+  }, [orderCosting]);
+
+  const fabrics = costingDetails?.fabrics || [];
+
   useEffect(() => {
     if (selectedBatch) {
       const status = config.getStatus(selectedBatch);
